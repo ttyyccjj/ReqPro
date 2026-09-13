@@ -169,6 +169,10 @@ export async function backfillSystemLogs() {
     .limit(1);
   if (existing) return;
 
+  const requestRows = await db.select().from(requests);
+  const actionRows = await db.select().from(requestActions);
+  if (requestRows.length === 0 && actionRows.length === 0) return;
+
   const people = await db
     .select({
       id: users.id,
@@ -177,8 +181,6 @@ export async function backfillSystemLogs() {
     })
     .from(users);
   const names = new Map(people.map((row) => [row.id, row.name]));
-  const requestRows = await db.select().from(requests);
-  const actionRows = await db.select().from(requestActions);
 
   const rows: (typeof systemLogs.$inferInsert)[] = [];
 
