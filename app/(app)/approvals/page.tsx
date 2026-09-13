@@ -26,31 +26,20 @@ export default async function InboxPage({
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-zinc-900">Inbox</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">Inbox</h1>
+      <p className="page-lead">
         {isHistory
           ? "Requests you have already passed, approved, sent back, or rejected."
           : "Requests waiting on you for the current review or approve step."}
       </p>
 
-      <div className="mt-6 flex gap-5 border-b border-zinc-200 text-sm">
-        <Link
-          href="/approvals"
-          className={
-            isHistory
-              ? "pb-2 text-zinc-500 hover:text-zinc-900"
-              : "border-b-2 border-zinc-900 pb-2 font-medium text-zinc-900"
-          }
-        >
+      <div className="mt-6 flex gap-5 border-b border-line text-sm">
+        <Link href="/approvals" className={isHistory ? "tab-link" : "tab-link-active"}>
           Waiting
         </Link>
         <Link
           href="/approvals?view=history"
-          className={
-            isHistory
-              ? "border-b-2 border-zinc-900 pb-2 font-medium text-zinc-900"
-              : "pb-2 text-zinc-500 hover:text-zinc-900"
-          }
+          className={isHistory ? "tab-link-active" : "tab-link"}
         >
           History
         </Link>
@@ -58,43 +47,37 @@ export default async function InboxPage({
 
       {isHistory ? (
         history.length === 0 ? (
-          <p className="mt-8 rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500">
-            You have not signed any requests yet.
-          </p>
+          <p className="panel-empty">You have not signed any requests yet.</p>
         ) : (
-          <div className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
+          <div className="card mt-6 overflow-x-auto">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 font-medium">Type</th>
-                  <th className="px-4 py-3 font-medium">Title</th>
-                  <th className="px-4 py-3 font-medium">Requester</th>
-                  <th className="px-4 py-3 font-medium">Your action</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Acted</th>
+                  <th>Type</th>
+                  <th>Title</th>
+                  <th>Requester</th>
+                  <th>Your action</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Acted</th>
                 </tr>
               </thead>
               <tbody>
                 {history.map((item) => (
-                  <tr key={item.id} className="border-b border-zinc-100 last:border-0">
-                    <td className="px-4 py-3 text-zinc-600">
+                  <tr key={item.id}>
+                    <td>
                       <RequestTypeCell type={item.type} number={item.number} />
                     </td>
-                    <td className="max-w-[16rem] px-4 py-3">
+                    <td className="max-w-[16rem]">
                       <RequestTitleLink id={item.id} title={item.title} />
                     </td>
-                    <td className="px-4 py-3 text-zinc-600">{item.requesterName}</td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {actionLabel[item.yourAction]}
-                    </td>
-                    <td className="px-4 py-3 text-zinc-600">
-                      {formatAmount(item.amount, item.currency)}
-                    </td>
-                    <td className="px-4 py-3">
+                    <td>{item.requesterName}</td>
+                    <td>{actionLabel[item.yourAction]}</td>
+                    <td className="font-mono">{formatAmount(item.amount, item.currency)}</td>
+                    <td>
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="px-4 py-3 text-zinc-600">
+                    <td className="font-mono">
                       <LocalDate value={item.actedAt} />
                     </td>
                   </tr>
@@ -104,43 +87,39 @@ export default async function InboxPage({
           </div>
         )
       ) : waiting.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500">
-          Nothing waiting on you.
-        </p>
+        <p className="panel-empty">Nothing waiting on you.</p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
+        <div className="card mt-6 overflow-x-auto">
+          <table className="data-table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 font-medium">Type</th>
-                <th className="px-4 py-3 font-medium">Title</th>
-                <th className="px-4 py-3 font-medium">Requester</th>
-                <th className="px-4 py-3 font-medium">Step</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Submitted</th>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Requester</th>
+                <th>Step</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Submitted</th>
               </tr>
             </thead>
             <tbody>
               {waiting.map((item) => (
-                <tr key={item.id} className="border-b border-zinc-100 last:border-0">
-                  <td className="px-4 py-3 text-zinc-600">
+                <tr key={item.id}>
+                  <td>
                     <RequestTypeCell type={item.type} number={item.number} />
                   </td>
-                  <td className="max-w-[16rem] px-4 py-3">
+                  <td className="max-w-[16rem]">
                     <RequestTitleLink id={item.id} title={item.title} />
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">{item.requesterName}</td>
-                  <td className="px-4 py-3 capitalize text-zinc-600">
+                  <td>{item.requesterName}</td>
+                  <td className="capitalize">
                     {item.stepKind} · {item.waitingOn}
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">
-                    {formatAmount(item.amount, item.currency)}
-                  </td>
-                  <td className="px-4 py-3">
+                  <td className="font-mono">{formatAmount(item.amount, item.currency)}</td>
+                  <td>
                     <StatusBadge status={item.status} />
                   </td>
-                  <td className="px-4 py-3 text-zinc-600">
+                  <td className="font-mono">
                     <LocalDate value={item.createdAt} />
                   </td>
                 </tr>

@@ -13,8 +13,8 @@ export default async function LogsPage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-zinc-900">Logs</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">Logs</h1>
+      <p className="page-lead">
         Who changed what, newest first. The first 50 events load here; more
         appear as you scroll.
       </p>

@@ -13,16 +13,14 @@ export default async function AllRequestsPage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-zinc-900">All requests</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">All requests</h1>
+      <p className="page-lead">
         Every request in the company. Open one to see its route, files, and
         history.
       </p>
 
       {items.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500">
-          No requests have been submitted yet.
-        </p>
+        <p className="panel-empty">No requests have been submitted yet.</p>
       ) : (
         <RequestTable items={items} showRequester />
       )}

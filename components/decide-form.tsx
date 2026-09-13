@@ -36,7 +36,7 @@ export function DecideForm({
     title: string;
     body: string;
     confirmLabel: string;
-    tone: "default" | "danger";
+    tone: "ok" | "warn" | "danger";
     data: FormData;
   } | null>(null);
   const isReview = kind === "review";
@@ -56,7 +56,12 @@ export function DecideForm({
       title: `${verb} this request?`,
       body: `${ref}${money}`,
       confirmLabel: verb,
-      tone: action === "rejected" ? "danger" : "default",
+      tone:
+        action === "rejected"
+          ? "danger"
+          : action === "sent_back"
+            ? "warn"
+            : "ok",
       data: formDataFromSubmit(event),
     });
   }
@@ -66,13 +71,13 @@ export function DecideForm({
       <form
         action={formAction}
         onSubmit={askToConfirm}
-        className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+        className="card space-y-3 bg-wash p-4"
       >
         <input type="hidden" name="requestId" value={requestId} />
-        <label className="block text-sm font-medium text-zinc-700">
+        <label className="block text-sm font-medium text-ink">
           Comment
           <textarea
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900"
+            className="input-field w-full min-h-24"
             name="comment"
             maxLength={1000}
             placeholder={
@@ -83,7 +88,7 @@ export function DecideForm({
           />
         </label>
         {state?.error ? (
-          <p className="text-sm text-rose-700" role="alert">
+          <p className="text-sm text-[#93000a]" role="alert">
             {state.error}
           </p>
         ) : null}
@@ -93,7 +98,7 @@ export function DecideForm({
             name="action"
             value={isReview ? "passed" : "approved"}
             disabled={pending}
-            className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
+            className="btn-ok"
           >
             {isReview ? "Pass" : "Approve"}
           </button>
@@ -102,7 +107,7 @@ export function DecideForm({
             name="action"
             value="sent_back"
             disabled={pending}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
+            className="btn-warn"
           >
             Send back
           </button>
@@ -112,7 +117,7 @@ export function DecideForm({
               name="action"
               value="rejected"
               disabled={pending}
-              className="rounded-md bg-rose-700 px-3 py-2 text-sm font-medium text-white hover:bg-rose-800 disabled:opacity-60"
+              className="btn-danger"
             >
               Reject
             </button>
@@ -124,7 +129,7 @@ export function DecideForm({
         title={prompt?.title ?? ""}
         body={prompt?.body ?? ""}
         confirmLabel={prompt?.confirmLabel ?? "Confirm"}
-        tone={prompt?.tone ?? "default"}
+        tone={prompt?.tone ?? "ok"}
         pending={pending}
         onCancel={() => setPrompt(null)}
         onConfirm={() => {

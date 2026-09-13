@@ -21,45 +21,40 @@ export default async function PeoplePage() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-zinc-900">People</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">People</h1>
+      <p className="page-lead">
         App access is admin or member. Position decides who acts on a route
         step. Department is the requester&apos;s team on a request. Deactivate
         an account instead of deleting it so history stays intact.
       </p>
 
-      <div className="mt-6 rounded-lg border border-zinc-200 bg-white">
-        <table className="w-full table-fixed text-left text-sm">
-          <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
+      <div className="card mt-6 overflow-x-auto">
+        <table className="data-table table-fixed">
+          <thead>
             <tr>
-              <th className="w-[28%] px-3 py-3 font-medium">Person</th>
-              <th className="w-[12%] px-3 py-3 font-medium">Role</th>
-              <th className="w-[20%] px-3 py-3 font-medium">Position</th>
-              <th className="w-[18%] px-3 py-3 font-medium">Department</th>
-              <th className="w-[8%] px-3 py-3 font-medium">
+              <th className="w-[28%]">Person</th>
+              <th className="w-[12%]">Role</th>
+              <th className="w-[20%]">Position</th>
+              <th className="w-[18%]">Department</th>
+              <th className="w-[8%]">
                 <span className="sr-only">Save assignment</span>
               </th>
-              <th className="w-[14%] px-3 py-3 font-medium">Status</th>
+              <th className="w-[14%]">Status</th>
             </tr>
           </thead>
           <tbody>
             {people.map((person) => (
-              <tr
-                key={person.id}
-                className={`border-b border-zinc-100 last:border-0 ${
-                  person.active ? "" : "bg-zinc-50"
-                }`}
-              >
-                <td className="px-3 py-3">
+              <tr key={person.id} className={person.active ? "" : "opacity-70"}>
+                <td>
                   <div className="min-w-0">
-                    <p className="flex flex-wrap items-center gap-2 font-medium text-zinc-900">
+                    <p className="flex flex-wrap items-center gap-2 font-medium text-ink">
                       {person.name}
                       {person.active ? null : <InactiveBadge />}
                     </p>
-                    <p className="truncate text-zinc-600" title={person.email}>
+                    <p className="truncate text-muted" title={person.email}>
                       {person.email}
                     </p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="font-mono text-xs text-muted">
                       <LocalDate value={person.createdAt} />
                     </p>
                   </div>
@@ -72,7 +67,7 @@ export default async function PeoplePage() {
                   positions={positions}
                   departments={departmentRows}
                 />
-                <td className="px-3 py-3">
+                <td>
                   <ActiveToggleForm
                     action={setUserActive}
                     id={person.id}

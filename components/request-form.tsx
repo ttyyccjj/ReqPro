@@ -17,9 +17,9 @@ import {
   resolveCurrency,
 } from "@/lib/format";
 import type { AttachmentItem } from "@/components/attachment-list";
+import { inputClass } from "@/lib/ui";
 
-const inputClass =
-  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900";
+const fieldClass = inputClass;
 
 type PickedFile = {
   id: string;
@@ -112,10 +112,10 @@ export function RequestForm({
   return (
     <form action={submitWithAttachments} className="space-y-4">
       {request ? <input type="hidden" name="requestId" value={request.id} /> : null}
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Type
         <select
-          className={inputClass}
+          className={fieldClass}
           name="typeId"
           required
           value={typeId}
@@ -130,19 +130,19 @@ export function RequestForm({
           ))}
         </select>
         {types.length === 0 ? (
-          <p className="mt-1 text-xs font-normal text-zinc-500">
+          <p className="mt-1 text-xs font-normal text-muted">
             An admin needs to add request types on the Settings page.
           </p>
         ) : request?.type && !types.some((type) => type.name === request.type) ? (
-          <p className="mt-1 text-xs font-normal text-zinc-500">
+          <p className="mt-1 text-xs font-normal text-muted">
             Previously submitted as {request.type}. Choose the current type.
           </p>
         ) : null}
       </label>
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Title
         <input
-          className={inputClass}
+          className={fieldClass}
           name="title"
           required
           maxLength={120}
@@ -150,29 +150,29 @@ export function RequestForm({
         />
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="block text-sm font-medium text-zinc-700">
+        <div className="block text-sm font-medium text-ink">
           Requester
-          <p className="mt-1 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-normal text-zinc-700">
+          <p className="mt-1 rounded-sm border border-line bg-canvas px-3 py-2 text-sm font-normal text-muted">
             {request?.requesterName ?? defaultName}
           </p>
         </div>
-        <div className="block text-sm font-medium text-zinc-700">
+        <div className="block text-sm font-medium text-ink">
           Department
-          <p className="mt-1 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-normal text-zinc-700">
+          <p className="mt-1 rounded-sm border border-line bg-canvas px-3 py-2 text-sm font-normal text-muted">
             {departmentName ?? "Not assigned"}
           </p>
           {!departmentName ? (
-            <p className="mt-1 text-xs font-normal text-zinc-500">
+            <p className="mt-1 text-xs font-normal text-muted">
               An admin needs to assign your department on the People page.
             </p>
           ) : null}
         </div>
       </div>
-      <div className="block text-sm font-medium text-zinc-700">
+      <div className="block text-sm font-medium text-ink">
         <label htmlFor="request-amount">Amount (optional)</label>
         <div className="mt-1 flex gap-2">
           <select
-            className="w-28 shrink-0 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900"
+            className="input-field mt-0 w-28 shrink-0"
             name="currency"
             aria-label="Currency"
             value={currency}
@@ -190,7 +190,7 @@ export function RequestForm({
           </select>
           <input
             id="request-amount"
-            className={`${inputClass} mt-0`}
+            className={`${fieldClass} mt-0 min-w-0 flex-1`}
             name="amount"
             inputMode={currency === "JPY" ? "numeric" : "decimal"}
             value={amountText}
@@ -220,38 +220,38 @@ export function RequestForm({
           />
         </div>
       </div>
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Details
         <textarea
-          className={`${inputClass} min-h-32`}
+          className={`${fieldClass} min-h-32`}
           name="details"
           required
           maxLength={4000}
           defaultValue={request?.details}
         />
       </label>
-      <div className="block text-sm font-medium text-zinc-700">
+      <div className="block text-sm font-medium text-ink">
         Attachments
         {attachments.length > 0 ? (
           <ul className="mt-2 space-y-2 font-normal">
             {attachments.map((file) => (
               <li
                 key={file.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2"
+                className="flex items-center justify-between gap-3 rounded-sm border border-line px-3 py-2"
               >
                 <a
                   href={`/api/attachments/${file.id}`}
-                  className="min-w-0 truncate text-zinc-900 underline-offset-2 hover:underline"
+                  className="min-w-0 truncate text-ink underline-offset-2 hover:underline"
                   {...(canPreviewAttachment(file.mimeType)
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
                   {file.originalName}
-                  <span className="ml-2 text-xs text-zinc-500">
+                  <span className="ml-2 text-xs text-muted">
                     {formatBytes(file.sizeBytes)}
                   </span>
                 </a>
-                <label className="flex shrink-0 items-center gap-2 text-xs text-zinc-600">
+                <label className="flex shrink-0 items-center gap-2 text-xs text-muted">
                   <input
                     type="checkbox"
                     name="removeAttachmentIds"
@@ -273,7 +273,7 @@ export function RequestForm({
           </ul>
         ) : null}
         <input
-          className={`${inputClass} file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-zinc-700`}
+          className={`${fieldClass} h-auto py-1.5 file:mr-3 file:rounded-sm file:border-0 file:bg-[#e7eeff] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink`}
           type="file"
           multiple
           accept={ATTACHMENT_ACCEPT}
@@ -284,7 +284,7 @@ export function RequestForm({
             addPickedFiles(incoming);
           }}
         />
-        <p className="mt-1 text-xs font-normal text-zinc-500">
+        <p className="mt-1 text-xs font-normal text-muted">
           {ATTACHMENT_HINT} You can add files one at a time.
         </p>
         {selected.length > 0 ? (
@@ -292,18 +292,18 @@ export function RequestForm({
             {selected.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 px-3 py-2 text-sm"
+                className="flex items-center justify-between gap-3 rounded-sm border border-line px-3 py-2 text-sm"
               >
-                <span className="min-w-0 truncate text-zinc-700">
+                <span className="min-w-0 truncate text-muted">
                   {item.file.name}
-                  <span className="ml-2 text-xs text-zinc-500">
+                  <span className="ml-2 text-xs text-muted">
                     {formatBytes(item.file.size)}
                     {item.file.size > MAX_FILE_BYTES ? " · over 5 MB" : ""}
                   </span>
                 </span>
                 <button
                   type="button"
-                  className="shrink-0 text-xs font-medium text-zinc-600 hover:text-zinc-900"
+                  className="shrink-0 text-xs font-medium text-muted hover:text-ink"
                   onClick={() => dropPickedFile(item.id)}
                 >
                   Remove
@@ -317,7 +317,7 @@ export function RequestForm({
             {limitWarning}
           </p>
         ) : slotsLeft === 0 && remaining + selected.length >= MAX_FILES ? (
-          <p className="mt-1 text-xs font-normal text-zinc-500">
+          <p className="mt-1 text-xs font-normal text-muted">
             File limit reached ({MAX_FILES}). Remove a file to add another.
           </p>
         ) : null}
@@ -330,7 +330,7 @@ export function RequestForm({
       <button
         type="submit"
         disabled={pending || !departmentName || tooLarge || types.length === 0}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+        className="btn-primary"
       >
         {pending
           ? "Saving…"

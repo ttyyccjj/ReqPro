@@ -9,7 +9,6 @@ export function formatDate(value: Date | number) {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZoneName: "short",
   }).format(value);
 }
 

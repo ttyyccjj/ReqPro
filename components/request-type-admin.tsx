@@ -8,8 +8,7 @@ import {
   type RequestTypeActionState,
 } from "@/app/actions/request-types";
 import { ActiveToggleForm } from "@/components/active-toggle";
-
-const inputClass = "rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm";
+import { inputClassCompact as inputClass } from "@/lib/ui";
 
 export function AddRequestTypeForm() {
   const [state, formAction, pending] = useActionState<RequestTypeActionState, FormData>(
@@ -29,7 +28,7 @@ export function AddRequestTypeForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+        className="btn-primary py-1.5"
       >
         {pending ? "Adding…" : "Add type"}
       </button>
@@ -61,7 +60,7 @@ export function RenameRequestTypeForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-zinc-200 px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+        className="btn-ghost px-2 py-1"
       >
         {pending ? "Saving…" : "Rename"}
       </button>

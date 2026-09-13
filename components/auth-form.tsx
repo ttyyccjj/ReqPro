@@ -2,28 +2,34 @@
 
 import { useActionState, useState } from "react";
 import { signInAction, signUpAction, type AuthFormState } from "@/app/actions/auth";
-
-const inputClass =
-  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900";
+import { BrandLogo } from "@/components/brand-logo";
+import { LanguageToggle } from "@/components/language-toggle";
+import { inputClass } from "@/lib/ui";
 
 export function AuthForm() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
 
   return (
-    <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <h1 className="text-xl font-semibold text-zinc-900">
+    <div className="card-accent card w-full max-w-md p-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="md:hidden">
+          <BrandLogo href="/signin" onDark={false} />
+        </div>
+        <div className="ml-auto">
+          <LanguageToggle />
+        </div>
+      </div>
+      <h1 className="text-xl font-semibold text-ink">
         {mode === "signin" ? "Sign in to ReqPro" : "Create a ReqPro account"}
       </h1>
-      <p className="mt-1 text-sm text-zinc-500">
-        Company request and approval workspace.
-      </p>
+      <p className="page-lead">Company request and approval workspace.</p>
 
       <AuthFields key={mode} mode={mode} email={email} onEmailChange={setEmail} />
 
       <button
         type="button"
-        className="mt-4 text-sm text-zinc-600 underline hover:text-zinc-900"
+        className="mt-4 text-sm text-muted underline hover:text-ink"
         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
       >
         {mode === "signin"
@@ -57,7 +63,7 @@ function AuthFields({
       className="mt-6 space-y-4"
     >
       {mode === "signup" ? (
-        <label className="block text-sm font-medium text-zinc-700">
+        <label className="block text-sm font-medium text-ink">
           Name
           <input
             className={inputClass}
@@ -69,7 +75,7 @@ function AuthFields({
           />
         </label>
       ) : null}
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Email
         <input
           className={inputClass}
@@ -81,7 +87,7 @@ function AuthFields({
           onChange={(event) => onEmailChange(event.target.value)}
         />
       </label>
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Password
         <input
           className={inputClass}
@@ -93,15 +99,11 @@ function AuthFields({
         />
       </label>
       {state?.error ? (
-        <p className="text-sm text-rose-700" role="alert">
+        <p className="text-sm text-[#93000a]" role="alert">
           {state.error}
         </p>
       ) : null}
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className="btn-primary w-full">
         {pending ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
       </button>
     </form>

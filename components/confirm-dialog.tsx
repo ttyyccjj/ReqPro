@@ -18,7 +18,7 @@ export function ConfirmDialog({
   body: string;
   confirmLabel: string;
   cancelLabel?: string;
-  tone?: "default" | "danger";
+  tone?: "default" | "ok" | "warn" | "danger";
   pending?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -46,15 +46,19 @@ export function ConfirmDialog({
 
   const confirmClass =
     tone === "danger"
-      ? "rounded-md bg-rose-700 px-3 py-2 text-sm font-medium text-white hover:bg-rose-800 disabled:opacity-60"
-      : "rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60";
+      ? "btn-danger"
+      : tone === "warn"
+        ? "btn-warn"
+        : tone === "ok"
+          ? "btn-ok"
+          : "btn-primary";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="Close"
-        className="absolute inset-0 bg-zinc-950/40"
+        className="absolute inset-0 bg-slate/40"
         disabled={pending}
         onClick={onCancel}
       />
@@ -62,18 +66,18 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-md rounded-lg border border-zinc-200 bg-white p-5 shadow-lg"
+        className="card-accent card relative w-full max-w-md p-5 shadow-[0_8px_24px_-4px_rgba(43,46,52,0.16)]"
       >
-        <h2 id={titleId} className="text-base font-semibold text-zinc-900">
+        <h2 id={titleId} className="text-base font-semibold text-ink">
           {title}
         </h2>
-        <p className="mt-2 text-sm leading-6 text-zinc-600">{body}</p>
+        <p className="mt-2 text-sm leading-6 text-muted">{body}</p>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"
             disabled={pending}
             onClick={onCancel}
-            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
+            className="btn-ghost"
           >
             {cancelLabel}
           </button>

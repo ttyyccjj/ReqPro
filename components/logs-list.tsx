@@ -7,10 +7,10 @@ import { formatDate } from "@/lib/format";
 import type { SystemLogItem } from "@/lib/system-log";
 
 const categoryClass: Record<SystemLogItem["category"], string> = {
-  Request: "bg-sky-50 text-sky-800",
-  People: "bg-violet-50 text-violet-800",
-  Settings: "bg-amber-50 text-amber-900",
-  Account: "bg-zinc-100 text-zinc-700",
+  Request: "border-l-[3px] border-[#208b9b] bg-[#e0f2fe] text-[#075985]",
+  People: "border-l-[3px] border-[#3f5268] bg-[#e7eeff] text-[#111c2d]",
+  Settings: "border-l-[3px] border-[#e88d14] bg-[#fef3c7] text-[#92400e]",
+  Account: "border-l-[3px] border-[#94a3b8] bg-[#f1f5f9] text-[#475569]",
 };
 
 export function LogsList({
@@ -67,34 +67,34 @@ export function LogsList({
 
   if (items.length === 0) {
     return (
-      <p className="mt-8 rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500">
+      <p className="panel-empty">
         Nothing has been logged yet.
       </p>
     );
   }
 
   return (
-    <ul className="mt-6 divide-y divide-zinc-100 overflow-hidden rounded-lg border border-zinc-200 bg-white">
+    <ul className="card mt-6 divide-y divide-line overflow-hidden">
       {items.map((item) => (
         <li key={item.id} className="px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <p className="text-sm text-zinc-900">{item.summary}</p>
+            <p className="text-sm text-ink">{item.summary}</p>
             <span
-              className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${categoryClass[item.category]}`}
+              className={`inline-flex rounded-sm px-2 py-0.5 text-[11px] font-semibold tracking-[0.06em] uppercase ${categoryClass[item.category]}`}
             >
               {item.category}
             </span>
           </div>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted">
             {item.actorName}
-            <span className="text-zinc-300"> · </span>
+            <span className="text-line-strong"> · </span>
             {formatDate(item.createdAt)}
             {item.requestId ? (
               <>
-                <span className="text-zinc-300"> · </span>
+                <span className="text-line-strong"> · </span>
                 <Link
                   href={`/requests/${item.requestId}`}
-                  className="font-mono text-zinc-600 hover:text-zinc-900 hover:underline"
+                  className="font-mono text-muted hover:text-ink hover:underline"
                 >
                   {item.requestNumber ?? "Open request"}
                 </Link>
@@ -106,12 +106,12 @@ export function LogsList({
       {cursor ? (
         <li
           ref={sentinelRef}
-          className="px-4 py-3 text-center text-xs text-zinc-500"
+          className="px-4 py-3 text-center text-xs text-muted"
         >
           {pending ? "Loading more…" : "Scroll to load more"}
         </li>
       ) : (
-        <li className="px-4 py-3 text-center text-xs text-zinc-400">
+        <li className="px-4 py-3 text-center text-xs text-muted">
           End of logs
         </li>
       )}

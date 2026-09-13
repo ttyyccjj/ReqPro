@@ -51,17 +51,17 @@ export function RetractForm({
       <form
         action={formAction}
         onSubmit={askToConfirm}
-        className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4"
+        className="space-y-3 rounded-sm border border-[#e88d14] bg-[#fef3c7] p-4"
       >
         <input type="hidden" name="requestId" value={requestId} />
-        <p className="text-sm text-amber-950">
+        <p className="text-sm text-[#92400e]">
           Take back your {what} while nobody after you has signed. This is logged;
           it does not erase the earlier stamp.
         </p>
-        <label className="block text-sm font-medium text-zinc-700">
+        <label className="block text-sm font-medium text-ink">
           Reason
           <textarea
-            className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-900"
+            className="input-field w-full min-h-24"
             name="comment"
             required
             maxLength={1000}
@@ -76,7 +76,7 @@ export function RetractForm({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-950 hover:bg-amber-100 disabled:opacity-60"
+          className="btn-ghost"
         >
           {pending ? "Retracting…" : "Retract"}
         </button>

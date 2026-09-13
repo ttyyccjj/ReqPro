@@ -27,7 +27,7 @@ export function ActiveToggleForm({
       <button
         type="submit"
         disabled={pending || disabled}
-        className="rounded-md border border-zinc-200 px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="btn-ghost px-2 py-1 disabled:cursor-not-allowed"
       >
         {pending ? "Saving…" : active ? "Deactivate" : "Reactivate"}
       </button>
@@ -42,7 +42,7 @@ export function ActiveToggleForm({
 
 export function InactiveBadge() {
   return (
-    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">
+    <span className="rounded-sm bg-[#f1f5f9] px-2 py-0.5 text-[11px] font-semibold tracking-[0.06em] text-[#475569] uppercase">
       Inactive
     </span>
   );

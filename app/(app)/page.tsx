@@ -11,23 +11,16 @@ export default async function HomePage() {
       <LiveRefresh />
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-zinc-900">My requests</h1>
-          <p className="mt-1 text-sm text-zinc-500">
-            Requests you have submitted for approval.
-          </p>
+          <h1 className="page-title">My requests</h1>
+          <p className="page-lead">Requests you have submitted for approval.</p>
         </div>
-        <Link
-          href="/requests/new"
-          className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-        >
+        <Link href="/requests/new" className="btn-primary">
           New request
         </Link>
       </div>
 
       {items.length === 0 ? (
-        <p className="mt-8 rounded-lg border border-dashed border-zinc-300 bg-white p-8 text-center text-sm text-zinc-500">
-          No requests yet. Submit one to start an approval.
-        </p>
+        <p className="panel-empty">No requests yet. Submit one to start an approval.</p>
       ) : (
         <RequestTable items={items} />
       )}

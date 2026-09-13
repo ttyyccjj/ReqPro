@@ -12,11 +12,11 @@ export default async function NewRequestPage() {
 
   return (
     <section className="max-w-2xl">
-      <h1 className="text-2xl font-semibold text-zinc-900">New request</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="page-title">New request</h1>
+      <p className="page-lead">
         Submit a request for people on the route to review or approve.
       </p>
-      <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-6">
+      <div className="card-accent card mt-6 p-6">
         <RequestForm
           defaultName={user.name}
           departmentName={departmentName}

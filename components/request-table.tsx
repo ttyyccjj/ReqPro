@@ -17,7 +17,7 @@ export function RequestTypeCell({
     <div>
       <p>{type ?? "—"}</p>
       {number ? (
-        <p className="mt-0.5 font-mono text-xs text-zinc-500">{number}</p>
+        <p className="mt-0.5 font-mono text-xs text-muted">{number}</p>
       ) : null}
     </div>
   );
@@ -28,7 +28,7 @@ export function RequestTitleLink({ id, title }: { id: string; title: string }) {
     <Link
       href={`/requests/${id}`}
       title={title}
-      className="line-clamp-2 break-words font-medium text-zinc-900 hover:underline"
+      className="line-clamp-2 break-words font-medium text-ink hover:underline"
     >
       {title}
     </Link>
@@ -43,45 +43,39 @@ export function RequestTable({
   showRequester?: boolean;
 }) {
   return (
-    <div className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 bg-white">
-      <table className="min-w-full text-left text-sm">
-        <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500">
+    <div className="card mt-6 overflow-x-auto">
+      <table className="data-table">
+        <thead>
           <tr>
-            <th className="px-4 py-3 font-medium">Type</th>
-            <th className="px-4 py-3 font-medium">Title</th>
-            {showRequester ? (
-              <th className="px-4 py-3 font-medium">Requester</th>
-            ) : null}
-            <th className="px-4 py-3 font-medium">Department</th>
-            <th className="px-4 py-3 font-medium">Amount</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Waiting on</th>
-            <th className="px-4 py-3 font-medium">Submitted</th>
+            <th>Type</th>
+            <th>Title</th>
+            {showRequester ? <th>Requester</th> : null}
+            <th>Department</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Waiting on</th>
+            <th>Submitted</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.id} className="border-b border-zinc-100 last:border-0">
-              <td className="px-4 py-3 text-zinc-600">
+            <tr key={item.id}>
+              <td>
                 <RequestTypeCell type={item.type} number={item.number} />
               </td>
-              <td className="max-w-[16rem] px-4 py-3">
+              <td className="max-w-[16rem]">
                 <RequestTitleLink id={item.id} title={item.title} />
               </td>
-              {showRequester ? (
-                <td className="px-4 py-3 text-zinc-600">{item.requesterName}</td>
-              ) : null}
-              <td className="px-4 py-3 text-zinc-600">{item.department}</td>
-              <td className="px-4 py-3 text-zinc-600">
-                {formatAmount(item.amount, item.currency)}
-              </td>
-              <td className="px-4 py-3">
+              {showRequester ? <td>{item.requesterName}</td> : null}
+              <td>{item.department}</td>
+              <td className="font-mono">{formatAmount(item.amount, item.currency)}</td>
+              <td>
                 <StatusBadge status={item.status} />
               </td>
-              <td className="px-4 py-3 text-zinc-600">
+              <td>
                 {item.status === "pending" && item.waitingOn ? item.waitingOn : "—"}
               </td>
-              <td className="px-4 py-3 text-zinc-600">
+              <td className="font-mono">
                 <LocalDate value={item.createdAt} />
               </td>
             </tr>

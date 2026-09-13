@@ -23,10 +23,10 @@ export function WithdrawForm({ requestId }: { requestId: string }) {
       <form
         action={formAction}
         onSubmit={askToConfirm}
-        className="rounded-lg border border-zinc-200 bg-white p-4"
+        className="card p-4"
       >
         <input type="hidden" name="requestId" value={requestId} />
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-muted">
           You can withdraw this request while nobody has passed, approved, sent
           it back, or rejected it.
         </p>
@@ -38,7 +38,7 @@ export function WithdrawForm({ requestId }: { requestId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="mt-3 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-100 disabled:opacity-60"
+          className="btn-ghost mt-3"
         >
           {pending ? "Withdrawing…" : "Withdraw request"}
         </button>

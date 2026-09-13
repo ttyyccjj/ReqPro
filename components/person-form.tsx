@@ -3,9 +3,9 @@
 import { useActionState, useEffect, useState } from "react";
 import { savePerson, type UserActionState } from "@/app/actions/users";
 import type { Department, Position, Role } from "@/lib/db/schema";
+import { inputClassCompact } from "@/lib/ui";
 
-const selectClass =
-  "w-full min-w-0 max-w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm";
+const selectClass = `w-full min-w-0 max-w-full ${inputClassCompact}`;
 
 export function PersonAssignment({
   userId,
@@ -98,7 +98,7 @@ export function PersonAssignment({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-md border border-zinc-200 px-2 py-1 text-sm text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+            className="btn-ghost px-2 py-1"
           >
             {pending ? "Saving…" : "Save"}
           </button>

@@ -1,19 +1,323 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f4f5;
-  --foreground: #18181b;
+  --background: #efe6d6;
+  --foreground: #111c2d;
+  --canvas: #efe6d6;
+  --ink: #111c2d;
+  --muted: #5c5e65;
+  --rail: #263143;
+  --rail-ink: #ecf1ff;
+  --brand: #e60012;
+  --brand-dark: #b7000c;
+  --slate: #2b2e34;
+  --teal: #208b9b;
+  --line: #d8ccb8;
+  --line-strong: #c7b89f;
+  --panel: #f6efe3;
+  --wash: #e7dcc8;
+  --amber: #e88d14;
+  --ok: #16a34a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rail: var(--rail);
+  --color-rail-ink: var(--rail-ink);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-slate: var(--slate);
+  --color-teal: var(--teal);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-panel: var(--panel);
+  --color-wash: var(--wash);
+  --color-amber: var(--amber);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-ibm-plex);
+  --font-mono: var(--font-jetbrains);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 20;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 2rem;
+  color: var(--ink);
+}
+
+.page-lead {
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--muted);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  color: var(--ink);
+}
+
+.section-title::before {
+  content: "";
+  width: 0.375rem;
+  height: 1rem;
+  border-radius: 0.125rem;
+  background: var(--rail);
+}
+
+.label-caps {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 0.375rem;
+}
+
+.card-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--brand);
+}
+
+.panel-empty {
+  margin-top: 2rem;
+  border: 1px dashed var(--line-strong);
+  background: var(--panel);
+  border-radius: 0.375rem;
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.input-field {
+  margin-top: 0.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--ink);
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--slate);
+  box-shadow: 0 0 0 2px rgb(230 0 18 / 0.2);
+}
+
+textarea.input-field {
+  height: auto;
+  min-height: 8rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  background: var(--brand);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--brand-dark);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  background: var(--slate);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #1f2227;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.25rem;
+  background: var(--panel);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #3e444d;
+}
+
+.btn-ghost:hover {
+  background: var(--wash);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.6;
+}
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  background: #dc2626;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+}
+
+.btn-ok {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  background: var(--ok);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-ok:hover {
+  background: #15803d;
+}
+
+.btn-ok:disabled {
+  opacity: 0.6;
+}
+
+.btn-warn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  background: var(--amber);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-warn:hover {
+  background: #c67610;
+}
+
+.btn-warn:disabled {
+  opacity: 0.6;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 100%;
+  text-align: left;
+  font-size: 0.8125rem;
+}
+
+.data-table thead {
+  background: var(--slate);
+  color: #f1f5f9;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.data-table th {
+  padding: 0.75rem 1rem;
+}
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  color: #3e444d;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--wash);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tab-link {
+  padding-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.tab-link:hover {
+  color: var(--ink);
+}
+
+.tab-link-active {
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--brand);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand);
 }

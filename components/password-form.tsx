@@ -6,8 +6,7 @@ import {
   type ChangePasswordState,
 } from "@/app/actions/auth";
 
-const inputClass =
-  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-900";
+import { inputClass } from "@/lib/ui";
 
 export function PasswordForm() {
   const [state, formAction, pending] = useActionState<ChangePasswordState, FormData>(
@@ -17,7 +16,7 @@ export function PasswordForm() {
 
   return (
     <form action={formAction} className="space-y-4">
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Current password
         <input
           className={inputClass}
@@ -28,7 +27,7 @@ export function PasswordForm() {
           maxLength={128}
         />
       </label>
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         New password
         <input
           className={inputClass}
@@ -40,7 +39,7 @@ export function PasswordForm() {
           maxLength={128}
         />
       </label>
-      <label className="block text-sm font-medium text-zinc-700">
+      <label className="block text-sm font-medium text-ink">
         Confirm new password
         <input
           className={inputClass}
@@ -65,7 +64,7 @@ export function PasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60"
+        className="btn-primary"
       >
         {pending ? "Saving…" : "Update password"}
       </button>

@@ -28,19 +28,19 @@ export function AttachmentList({ items }: { items: AttachmentItem[] }) {
                 <img
                   src={href}
                   alt=""
-                  className="h-12 w-12 rounded-md border border-zinc-200 object-cover"
+                  className="h-12 w-12 rounded-sm border border-line object-cover"
                 />
               </a>
             ) : null}
             <div className="min-w-0">
               <a
                 href={href}
-                className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+                className="font-medium text-ink underline-offset-2 hover:underline"
                 {...preview}
               >
                 {item.originalName}
               </a>
-              <p className="text-xs text-zinc-500">{formatBytes(item.sizeBytes)}</p>
+              <p className="text-xs text-muted">{formatBytes(item.sizeBytes)}</p>
             </div>
           </li>
         );

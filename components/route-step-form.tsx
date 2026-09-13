@@ -19,7 +19,7 @@ type DraftStep = {
 };
 
 const selectClass =
-  "h-8 w-full min-w-0 rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900 disabled:bg-zinc-50 disabled:text-zinc-500";
+  "input-field mt-0 h-8 w-full min-w-0 px-2 disabled:bg-canvas disabled:text-muted";
 const rowClass = "flex flex-wrap items-center gap-2 px-3 py-2";
 const indexClass = "flex h-8 w-8 shrink-0 items-center justify-center";
 const fieldsClass = "flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center";
@@ -137,10 +137,10 @@ function IconButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-md border text-sm disabled:cursor-not-allowed disabled:opacity-30 ${
+      className={`inline-flex h-8 w-8 items-center justify-center rounded-sm border text-sm disabled:cursor-not-allowed disabled:opacity-30 ${
         danger
-          ? "border-zinc-200 text-rose-700 hover:bg-rose-50"
-          : "border-zinc-200 text-zinc-600 hover:bg-zinc-50"
+          ? "border-line text-[#991b1b] hover:bg-[#fee2e2]"
+          : "border-line text-muted hover:bg-canvas"
       }`}
     >
       {children}
@@ -150,14 +150,14 @@ function IconButton({
 
 function RouteStepListHeader() {
   return (
-    <div className={`hidden border-b border-zinc-200 text-xs font-medium text-zinc-500 sm:flex ${rowClass}`}>
-      <span className={`${indexClass} text-zinc-400`}>#</span>
+    <div className={`hidden border-b border-line bg-slate text-xs font-semibold tracking-[0.06em] text-[#f1f5f9] uppercase sm:flex ${rowClass}`}>
+      <span className={`${indexClass} text-[#94a3b8]`}>#</span>
       <div className={fieldsClass}>
         <span className={typeClass}>Type</span>
         <span className={positionClass}>Position</span>
         <span className={neededClass}>Needed</span>
       </div>
-      <span className={`${actionsClass} text-zinc-400`}> </span>
+      <span className={`${actionsClass} text-[#94a3b8]`}> </span>
     </div>
   );
 }
@@ -260,16 +260,16 @@ export function RouteStepsEditor({
   return (
     <div>
       <div className="mb-3">
-        <h2 className="text-sm font-semibold text-zinc-900">Steps</h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h2 className="section-title">Steps</h2>
+        <p className="page-lead">
           Requests move down this list. Edit freely, then save the whole route.
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+      <div className="card overflow-hidden">
         <RouteStepListHeader />
         {steps.length === 0 ? (
-          <p className="px-3 py-6 text-center text-sm text-zinc-500">
+          <p className="px-3 py-6 text-center text-sm text-muted">
             Add an approve step to start the route.
           </p>
         ) : (
@@ -280,22 +280,22 @@ export function RouteStepsEditor({
                   ?.holderCount ?? 0) === 0;
 
               return (
-                <li key={step.key} className="border-b border-zinc-100 last:border-b-0">
+                <li key={step.key} className="border-b border-line last:border-b-0">
                   <div className={rowClass}>
                     <div className={`relative ${indexClass}`}>
                       {index > 0 ? (
                         <span
                           aria-hidden
-                          className="absolute bottom-1/2 left-1/2 h-full w-px -translate-x-1/2 bg-zinc-200"
+                          className="absolute bottom-1/2 left-1/2 h-full w-px -translate-x-1/2 bg-line"
                         />
                       ) : null}
                       {index < steps.length - 1 ? (
                         <span
                           aria-hidden
-                          className="absolute top-1/2 left-1/2 h-full w-px -translate-x-1/2 bg-zinc-200"
+                          className="absolute top-1/2 left-1/2 h-full w-px -translate-x-1/2 bg-line"
                         />
                       ) : null}
-                      <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-medium text-white">
+                      <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-sm bg-slate text-[11px] font-medium text-white">
                         {index + 1}
                       </span>
                     </div>
@@ -336,7 +336,7 @@ export function RouteStepsEditor({
                   {index === lastApproveIndex || emptyPosition ? (
                     <div className="flex flex-wrap gap-x-3 px-3 pb-2 text-xs sm:pl-[3.25rem]">
                       {index === lastApproveIndex ? (
-                        <span className="text-zinc-500">Final decision</span>
+                        <span className="text-muted">Final decision</span>
                       ) : null}
                       {emptyPosition ? (
                         <span className="text-amber-800">
@@ -351,15 +351,15 @@ export function RouteStepsEditor({
           </ol>
         )}
 
-        <div className="border-t border-dashed border-zinc-200 bg-zinc-50/70">
+        <div className="border-t border-dashed border-line bg-canvas/70">
           {assignable.length === 0 ? (
-            <p className="px-3 py-3 text-sm text-zinc-500">
+            <p className="px-3 py-3 text-sm text-muted">
               Add an active position before you add a step.
             </p>
           ) : (
             <div className={rowClass}>
-              <span aria-hidden className={`${indexClass} text-zinc-400`}>
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-zinc-300 text-xs">
+              <span aria-hidden className={`${indexClass} text-muted`}>
+                <span className="flex h-6 w-6 items-center justify-center rounded-sm border border-dashed border-line-strong text-xs">
                   +
                 </span>
               </span>
@@ -378,7 +378,7 @@ export function RouteStepsEditor({
                 <button
                   type="button"
                   onClick={addStep}
-                  className="h-8 w-full rounded-md border border-zinc-300 bg-white text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+                  className="btn-ghost h-8 w-full py-0"
                 >
                   Add
                 </button>
@@ -387,8 +387,8 @@ export function RouteStepsEditor({
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-200 px-3 py-2.5">
-          <p className="text-xs text-zinc-500" role="status">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line px-3 py-2.5">
+          <p className="text-xs text-muted" role="status">
             {error ? (
               <span className="text-rose-700">{error}</span>
             ) : dirty ? (
@@ -401,7 +401,7 @@ export function RouteStepsEditor({
             type="button"
             onClick={save}
             disabled={!dirty || pending}
-            className="h-8 rounded-md bg-zinc-900 px-3 text-sm font-medium text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-primary h-8 py-0 disabled:cursor-not-allowed"
           >
             {pending ? "Saving…" : "Save route"}
           </button>
