@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/current-user";
 import { db, ensureSchema } from "@/lib/db";
 import { positions, routeSteps } from "@/lib/db/schema";
+import { zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { writeSystemLog } from "@/lib/system-log";
 import { saveRouteStepsSchema } from "@/lib/validations";
 
@@ -21,7 +23,8 @@ export async function saveRouteSteps(
   const admin = await requireAdmin();
   const parsed = saveRouteStepsSchema.safeParse(input);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "That route is not valid." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "errors.routeInvalid") };
   }
 
   await ensureSchema();
@@ -32,7 +35,8 @@ export async function saveRouteSteps(
     positionRows.filter((row) => row.active).map((row) => row.id),
   );
   if (parsed.data.steps.some((step) => !knownPositions.has(step.positionId))) {
-    return { error: "That position is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.positionNotValid") };
   }
 
   const existing = await db.select({ id: routeSteps.id }).from(routeSteps);

@@ -2,9 +2,9 @@
 
 import { useActionState, useRef, useState } from "react";
 import { createRequest, updateRequest, type ActionState } from "@/app/actions/requests";
+import { useT } from "@/components/locale-provider";
 import {
   ATTACHMENT_ACCEPT,
-  ATTACHMENT_HINT,
   MAX_FILE_BYTES,
   MAX_FILES,
   canPreviewAttachment,
@@ -17,6 +17,7 @@ import {
   resolveCurrency,
 } from "@/lib/format";
 import type { AttachmentItem } from "@/components/attachment-list";
+import { optimizeImageFile } from "@/lib/optimize-image";
 import { inputClass } from "@/lib/ui";
 
 const fieldClass = inputClass;
@@ -47,6 +48,7 @@ export function RequestForm({
   attachments?: AttachmentItem[];
   types: { id: string; name: string }[];
 }) {
+  const t = useT();
   const action = request ? updateRequest : createRequest;
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     action,
@@ -55,6 +57,7 @@ export function RequestForm({
   const [selected, setSelected] = useState<PickedFile[]>([]);
   const [removed, setRemoved] = useState<Set<string>>(new Set());
   const [limitWarning, setLimitWarning] = useState<string | null>(null);
+  const [optimizing, setOptimizing] = useState(false);
   const [currency, setCurrency] = useState<RequestCurrency>(
     resolveCurrency(request?.currency),
   );
@@ -65,6 +68,7 @@ export function RequestForm({
     types.find((type) => type.name === request?.type)?.id ?? types[0]?.id ?? "",
   );
   const selectedRef = useRef<PickedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const remaining = attachments.filter((file) => !removed.has(file.id)).length;
   const tooLarge = selected.some((item) => item.file.size > MAX_FILE_BYTES);
@@ -80,7 +84,7 @@ export function RequestForm({
     setLimitWarning(null);
   }
 
-  function addPickedFiles(incoming: File[]) {
+  async function addPickedFiles(incoming: File[]) {
     const current = selectedRef.current;
     const room = Math.max(0, MAX_FILES - remaining - current.length);
     const unique = incoming.filter(
@@ -91,14 +95,21 @@ export function RequestForm({
 
     setLimitWarning(
       room === 0 || skipped > 0
-        ? `You can attach ${MAX_FILES} files in total. Extra files were not added.`
+        ? t("requestForm.extraFiles", { max: MAX_FILES })
         : null,
     );
     if (accepted.length === 0) return;
-    setPickedFiles([
-      ...current,
-      ...accepted.map((file) => ({ id: crypto.randomUUID(), file })),
-    ]);
+
+    setOptimizing(true);
+    try {
+      const files = await Promise.all(accepted.map(optimizeImageFile));
+      setPickedFiles([
+        ...current,
+        ...files.map((file) => ({ id: crypto.randomUUID(), file })),
+      ]);
+    } finally {
+      setOptimizing(false);
+    }
   }
 
   function submitWithAttachments(formData: FormData) {
@@ -113,7 +124,7 @@ export function RequestForm({
     <form action={submitWithAttachments} className="space-y-4">
       {request ? <input type="hidden" name="requestId" value={request.id} /> : null}
       <label className="block text-sm font-medium text-ink">
-        Type
+        {t("requestForm.type")}
         <select
           className={fieldClass}
           name="typeId"
@@ -122,7 +133,7 @@ export function RequestForm({
           onChange={(event) => setTypeId(event.target.value)}
           disabled={types.length === 0}
         >
-          {types.length === 0 ? <option value="">No types yet</option> : null}
+          {types.length === 0 ? <option value="">{t("requestForm.noTypes")}</option> : null}
           {types.map((type) => (
             <option key={type.id} value={type.id}>
               {type.name}
@@ -131,16 +142,16 @@ export function RequestForm({
         </select>
         {types.length === 0 ? (
           <p className="mt-1 text-xs font-normal text-muted">
-            An admin needs to add request types on the Settings page.
+            {t("requestForm.noTypesHelp")}
           </p>
         ) : request?.type && !types.some((type) => type.name === request.type) ? (
           <p className="mt-1 text-xs font-normal text-muted">
-            Previously submitted as {request.type}. Choose the current type.
+            {t("requestForm.previousType", { type: request.type })}
           </p>
         ) : null}
       </label>
       <label className="block text-sm font-medium text-ink">
-        Title
+        {t("requestForm.title")}
         <input
           className={fieldClass}
           name="title"
@@ -151,30 +162,30 @@ export function RequestForm({
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="block text-sm font-medium text-ink">
-          Requester
+          {t("requestForm.requester")}
           <p className="mt-1 rounded-sm border border-line bg-canvas px-3 py-2 text-sm font-normal text-muted">
             {request?.requesterName ?? defaultName}
           </p>
         </div>
         <div className="block text-sm font-medium text-ink">
-          Department
+          {t("requestForm.department")}
           <p className="mt-1 rounded-sm border border-line bg-canvas px-3 py-2 text-sm font-normal text-muted">
-            {departmentName ?? "Not assigned"}
+            {departmentName ?? t("requestForm.notAssigned")}
           </p>
           {!departmentName ? (
             <p className="mt-1 text-xs font-normal text-muted">
-              An admin needs to assign your department on the People page.
+              {t("requestForm.noDepartmentHelp")}
             </p>
           ) : null}
         </div>
       </div>
       <div className="block text-sm font-medium text-ink">
-        <label htmlFor="request-amount">Amount (optional)</label>
+        <label htmlFor="request-amount">{t("requestForm.amount")}</label>
         <div className="mt-1 flex gap-2">
           <select
             className="input-field mt-0 w-28 shrink-0"
             name="currency"
-            aria-label="Currency"
+            aria-label={t("requestForm.currency")}
             value={currency}
             onChange={(event) => {
               const next = resolveCurrency(event.target.value);
@@ -186,7 +197,7 @@ export function RequestForm({
             }}
           >
             <option value="PHP">PHP</option>
-            <option value="JPY">Yen</option>
+            <option value="JPY">{t("requestForm.yen")}</option>
           </select>
           <input
             id="request-amount"
@@ -221,7 +232,7 @@ export function RequestForm({
         </div>
       </div>
       <label className="block text-sm font-medium text-ink">
-        Details
+        {t("requestForm.details")}
         <textarea
           className={`${fieldClass} min-h-32`}
           name="details"
@@ -231,52 +242,14 @@ export function RequestForm({
         />
       </label>
       <div className="block text-sm font-medium text-ink">
-        Attachments
-        {attachments.length > 0 ? (
-          <ul className="mt-2 space-y-2 font-normal">
-            {attachments.map((file) => (
-              <li
-                key={file.id}
-                className="flex items-center justify-between gap-3 rounded-sm border border-line px-3 py-2"
-              >
-                <a
-                  href={`/api/attachments/${file.id}`}
-                  className="min-w-0 truncate text-ink underline-offset-2 hover:underline"
-                  {...(canPreviewAttachment(file.mimeType)
-                    ? { target: "_blank", rel: "noopener noreferrer" }
-                    : {})}
-                >
-                  {file.originalName}
-                  <span className="ml-2 text-xs text-muted">
-                    {formatBytes(file.sizeBytes)}
-                  </span>
-                </a>
-                <label className="flex shrink-0 items-center gap-2 text-xs text-muted">
-                  <input
-                    type="checkbox"
-                    name="removeAttachmentIds"
-                    value={file.id}
-                    checked={removed.has(file.id)}
-                    onChange={(event) => {
-                      setRemoved((current) => {
-                        const next = new Set(current);
-                        if (event.target.checked) next.add(file.id);
-                        else next.delete(file.id);
-                        return next;
-                      });
-                    }}
-                  />
-                  Remove
-                </label>
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {t("requestForm.attachments")}
         <input
-          className={`${fieldClass} h-auto py-1.5 file:mr-3 file:rounded-sm file:border-0 file:bg-[#e7eeff] file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink`}
+          ref={fileInputRef}
+          className="sr-only"
           type="file"
           multiple
           accept={ATTACHMENT_ACCEPT}
+          tabIndex={-1}
           onChange={(event) => {
             const incoming = Array.from(event.target.files ?? []);
             event.target.value = "";
@@ -284,11 +257,52 @@ export function RequestForm({
             addPickedFiles(incoming);
           }}
         />
-        <p className="mt-1 text-xs font-normal text-muted">
-          {ATTACHMENT_HINT} You can add files one at a time.
-        </p>
-        {selected.length > 0 ? (
+        {attachments.length > 0 || selected.length > 0 ? (
           <ul className="mt-2 space-y-2 font-normal">
+            {attachments.map((file) => {
+              const dropping = removed.has(file.id);
+              return (
+                <li
+                  key={file.id}
+                  className={`flex items-center justify-between gap-3 rounded-sm border border-line px-3 py-2 ${
+                    dropping ? "bg-wash opacity-70" : ""
+                  }`}
+                >
+                  {dropping ? (
+                    <input type="hidden" name="removeAttachmentIds" value={file.id} />
+                  ) : null}
+                  <a
+                    href={`/api/attachments/${file.id}`}
+                    className={`min-w-0 truncate underline-offset-2 hover:underline ${
+                      dropping ? "text-muted line-through" : "text-ink"
+                    }`}
+                    {...(canPreviewAttachment(file.mimeType)
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
+                    {file.originalName}
+                    <span className="ml-2 text-xs text-muted no-underline">
+                      {formatBytes(file.sizeBytes)}
+                    </span>
+                  </a>
+                  <button
+                    type="button"
+                    className="shrink-0 text-xs font-medium text-muted hover:text-ink"
+                    onClick={() => {
+                      setRemoved((current) => {
+                        const next = new Set(current);
+                        if (next.has(file.id)) next.delete(file.id);
+                        else next.add(file.id);
+                        return next;
+                      });
+                      setLimitWarning(null);
+                    }}
+                  >
+                    {dropping ? t("requestForm.keep") : t("requestForm.remove")}
+                  </button>
+                </li>
+              );
+            })}
             {selected.map((item) => (
               <li
                 key={item.id}
@@ -298,7 +312,7 @@ export function RequestForm({
                   {item.file.name}
                   <span className="ml-2 text-xs text-muted">
                     {formatBytes(item.file.size)}
-                    {item.file.size > MAX_FILE_BYTES ? " · over 5 MB" : ""}
+                    {item.file.size > MAX_FILE_BYTES ? t("requestForm.overLimit") : ""}
                   </span>
                 </span>
                 <button
@@ -306,19 +320,30 @@ export function RequestForm({
                   className="shrink-0 text-xs font-medium text-muted hover:text-ink"
                   onClick={() => dropPickedFile(item.id)}
                 >
-                  Remove
+                  {t("requestForm.remove")}
                 </button>
               </li>
             ))}
           </ul>
         ) : null}
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            className="btn-ghost py-1.5"
+            disabled={slotsLeft === 0 || optimizing}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {optimizing ? t("requestForm.compressing") : t("requestForm.addFiles")}
+          </button>
+          <p className="text-xs font-normal text-muted">{t("requestForm.attachHint")}</p>
+        </div>
         {limitWarning ? (
           <p className="mt-1 text-xs font-normal text-rose-700" role="alert">
             {limitWarning}
           </p>
         ) : slotsLeft === 0 && remaining + selected.length >= MAX_FILES ? (
           <p className="mt-1 text-xs font-normal text-muted">
-            File limit reached ({MAX_FILES}). Remove a file to add another.
+            {t("requestForm.limitReached", { max: MAX_FILES })}
           </p>
         ) : null}
       </div>
@@ -329,14 +354,14 @@ export function RequestForm({
       ) : null}
       <button
         type="submit"
-        disabled={pending || !departmentName || tooLarge || types.length === 0}
+        disabled={pending || optimizing || !departmentName || tooLarge || types.length === 0}
         className="btn-primary"
       >
         {pending
-          ? "Saving…"
+          ? t("requestForm.saving")
           : request
-            ? "Resubmit request"
-            : "Submit request"}
+            ? t("requestForm.resubmit")
+            : t("requestForm.submit")}
       </button>
     </form>
   );

@@ -1,9 +1,11 @@
 import type { RequestCurrency } from "@/lib/db/schema";
+import { localeTag } from "@/lib/i18n";
+import type { Locale } from "@/lib/locale";
 
 export type { RequestCurrency };
 
-export function formatDate(value: Date | number) {
-  return new Intl.DateTimeFormat("en", {
+export function formatDate(value: Date | number, locale: Locale = "en") {
+  return new Intl.DateTimeFormat(localeTag(locale), {
     year: "numeric",
     month: "short",
     day: "numeric",

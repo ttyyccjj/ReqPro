@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { loadMoreLogs } from "@/app/actions/logs";
+import { useLocale } from "@/components/locale-provider";
 import { formatDate } from "@/lib/format";
+import { translateLogCategory, translateLogSummary } from "@/lib/log-i18n";
 import type { SystemLogItem } from "@/lib/system-log";
 
 const categoryClass: Record<SystemLogItem["category"], string> = {
@@ -20,6 +22,7 @@ export function LogsList({
   initialItems: SystemLogItem[];
   initialCursor: string | null;
 }) {
+  const { locale, t } = useLocale();
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
   const [pending, start] = useTransition();
@@ -68,7 +71,7 @@ export function LogsList({
   if (items.length === 0) {
     return (
       <p className="panel-empty">
-        Nothing has been logged yet.
+        {t("logs.empty")}
       </p>
     );
   }
@@ -78,17 +81,17 @@ export function LogsList({
       {items.map((item) => (
         <li key={item.id} className="px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <p className="text-sm text-ink">{item.summary}</p>
+            <p className="text-sm text-ink">{translateLogSummary(t, locale, item)}</p>
             <span
               className={`inline-flex rounded-sm px-2 py-0.5 text-[11px] font-semibold tracking-[0.06em] uppercase ${categoryClass[item.category]}`}
             >
-              {item.category}
+              {translateLogCategory(t, item.category)}
             </span>
           </div>
           <p className="mt-1 text-xs text-muted">
             {item.actorName}
             <span className="text-line-strong"> · </span>
-            {formatDate(item.createdAt)}
+            {formatDate(item.createdAt, locale)}
             {item.requestId ? (
               <>
                 <span className="text-line-strong"> · </span>
@@ -96,7 +99,7 @@ export function LogsList({
                   href={`/requests/${item.requestId}`}
                   className="font-mono text-muted hover:text-ink hover:underline"
                 >
-                  {item.requestNumber ?? "Open request"}
+                  {item.requestNumber ?? t("logs.openRequest")}
                 </Link>
               </>
             ) : null}
@@ -108,11 +111,11 @@ export function LogsList({
           ref={sentinelRef}
           className="px-4 py-3 text-center text-xs text-muted"
         >
-          {pending ? "Loading more…" : "Scroll to load more"}
+          {pending ? t("logs.loadingMore") : t("logs.scrollMore")}
         </li>
       ) : (
         <li className="px-4 py-3 text-center text-xs text-muted">
-          End of logs
+          {t("logs.end")}
         </li>
       )}
     </ul>

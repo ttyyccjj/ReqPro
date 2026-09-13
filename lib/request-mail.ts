@@ -1,8 +1,11 @@
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { createTranslator, formatRequestRef, type MessageKey } from "@/lib/i18n";
 import { requestUrl, scheduleMail, sendMail } from "@/lib/mail";
-import { requestRef } from "@/lib/system-log";
 import { requests, users } from "@/lib/db/schema";
+
+const en = createTranslator("en");
+const ja = createTranslator("ja");
 
 function escapeHtml(value: string) {
   return value
@@ -12,10 +15,16 @@ function escapeHtml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
+function bilingual(english: string, japanese: string) {
+  if (english === japanese) return english;
+  return `${english} / ${japanese}`;
+}
+
 function linkBlock(url: string) {
+  const label = bilingual(en("mail.open"), ja("mail.open"));
   return {
-    text: `Open it in ReqPro:\n${url}`,
-    html: `<p>Open it in ReqPro:<br /><a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>`,
+    text: `${label}\n${url}`,
+    html: `<p>${escapeHtml(label)}<br /><a href="${escapeHtml(url)}">${escapeHtml(url)}</a></p>`,
   };
 }
 
@@ -61,10 +70,20 @@ export function notifyAssigneesOfTurn(input: {
 
     const people = (await loadPeople(userIds)).filter((person) => person.active);
     const url = requestUrl(request.id);
-    const ref = requestRef(request.title, request.number);
-    const duty = input.kind === "review" ? "review" : "approve";
-    const subject = `Waiting on you: ${request.number ?? request.title}`;
-    const lead = `A request is waiting on you as ${input.positionName} (${duty}).`;
+    const refEn = formatRequestRef("en", request.title, request.number);
+    const refJa = formatRequestRef("ja", request.title, request.number);
+    const subjectRef = request.number ?? request.title;
+    const dutyEn = input.kind === "review" ? en("mail.review") : en("mail.approve");
+    const dutyJa = input.kind === "review" ? ja("mail.review") : ja("mail.approve");
+    const subject = bilingual(
+      en("mail.waitingSubject", { ref: subjectRef }),
+      ja("mail.waitingSubject", { ref: subjectRef }),
+    );
+    const lead = bilingual(
+      en("mail.waitingLead", { position: input.positionName, duty: dutyEn }),
+      ja("mail.waitingLead", { position: input.positionName, duty: dutyJa }),
+    );
+    const ref = bilingual(refEn, refJa);
     const links = linkBlock(url);
 
     for (const person of people) {
@@ -92,31 +111,39 @@ export function notifyRequesterOutcome(input: {
     if (!requester?.active) return;
 
     const url = requestUrl(request.id);
-    const ref = requestRef(request.title, request.number);
+    const refEn = formatRequestRef("en", request.title, request.number);
+    const refJa = formatRequestRef("ja", request.title, request.number);
+    const subjectRef = request.number ?? request.title;
     const reason = input.comment?.trim() || null;
     const links = linkBlock(url);
 
-    const copy =
+    const keys: { subject: MessageKey; lead: MessageKey } =
       input.outcome === "sent_back"
-        ? {
-            subject: `Changes requested: ${request.number ?? request.title}`,
-            lead: `${input.actorName} sent ${ref} back for changes.`,
-          }
+        ? { subject: "mail.changesSubject", lead: "mail.changesLead" }
         : input.outcome === "rejected"
-          ? {
-              subject: `Rejected: ${request.number ?? request.title}`,
-              lead: `${input.actorName} rejected ${ref}.`,
-            }
-          : {
-              subject: `Approved: ${request.number ?? request.title}`,
-              lead: `${input.actorName} approved ${ref}.`,
-            };
+          ? { subject: "mail.rejectedSubject", lead: "mail.rejectedLead" }
+          : { subject: "mail.approvedSubject", lead: "mail.approvedLead" };
+
+    const copy = {
+      subject: bilingual(
+        en(keys.subject, { ref: subjectRef }),
+        ja(keys.subject, { ref: subjectRef }),
+      ),
+      lead: bilingual(
+        en(keys.lead, { actor: input.actorName, request: refEn }),
+        ja(keys.lead, { actor: input.actorName, request: refJa }),
+      ),
+    };
 
     const textLines = [copy.lead];
     const htmlParts = [`<p>${escapeHtml(copy.lead)}</p>`];
     if (reason) {
-      textLines.push("", `Reason: ${reason}`);
-      htmlParts.push(`<p>Reason: ${escapeHtml(reason)}</p>`);
+      const reasonLine = bilingual(
+        en("mail.reason", { reason }),
+        ja("mail.reason", { reason }),
+      );
+      textLines.push("", reasonLine);
+      htmlParts.push(`<p>${escapeHtml(reasonLine)}</p>`);
     }
     textLines.push("", links.text);
     htmlParts.push(links.html);

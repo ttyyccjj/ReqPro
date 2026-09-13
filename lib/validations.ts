@@ -7,36 +7,36 @@ export const signInSchema = z.object({
 });
 
 export const signUpSchema = z.object({
-  name: z.string().trim().min(1, "Name is required.").max(80),
+  name: z.string().trim().min(1, "validation.nameRequired").max(80),
   email: z.string().trim().toLowerCase().email().max(254),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters.")
+    .min(8, "validation.passwordMin")
     .max(128),
 });
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required.").max(128),
+    currentPassword: z.string().min(1, "validation.currentRequired").max(128),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters.")
+      .min(8, "validation.passwordMin")
       .max(128),
-    confirmPassword: z.string().min(1, "Confirm the new password.").max(128),
+    confirmPassword: z.string().min(1, "validation.confirmRequired").max(128),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "New password and confirmation do not match.",
+    message: "validation.passwordMismatch",
     path: ["confirmPassword"],
   })
   .refine((value) => value.password !== value.currentPassword, {
-    message: "Choose a password that is different from the current one.",
+    message: "validation.passwordSame",
     path: ["password"],
   });
 
 export const requestSchema = z.object({
-  title: z.string().trim().min(1, "Title is required.").max(120),
-  details: z.string().trim().min(1, "Details are required.").max(4000),
-  typeId: z.string().min(1, "Choose a request type."),
+  title: z.string().trim().min(1, "validation.titleRequired").max(120),
+  details: z.string().trim().min(1, "validation.detailsRequired").max(4000),
+  typeId: z.string().min(1, "validation.typeRequired"),
   currency: z.enum(["PHP", "JPY"]).optional(),
   amount: z
     .string()
@@ -48,7 +48,7 @@ export const requestSchema = z.object({
       if (parsed == null) {
         ctx.addIssue({
           code: "custom",
-          message: "Amount must be a number that is zero or greater.",
+          message: "validation.amountInvalid",
         });
         return z.NEVER;
       }
@@ -72,7 +72,7 @@ export const retractSchema = z.object({
   comment: z
     .string()
     .trim()
-    .min(1, "Add a short reason for this retract.")
+    .min(1, "validation.retractReason")
     .max(1000),
 });
 
@@ -84,30 +84,30 @@ export const setPersonSchema = z.object({
 });
 
 export const positionNameSchema = z.object({
-  name: z.string().trim().min(1, "Position name is required.").max(80),
+  name: z.string().trim().min(1, "validation.positionNameRequired").max(80),
 });
 
 export const renamePositionSchema = z.object({
   positionId: z.string().min(1),
-  name: z.string().trim().min(1, "Position name is required.").max(80),
+  name: z.string().trim().min(1, "validation.positionNameRequired").max(80),
 });
 
 export const departmentNameSchema = z.object({
-  name: z.string().trim().min(1, "Department name is required.").max(80),
+  name: z.string().trim().min(1, "validation.departmentNameRequired").max(80),
 });
 
 export const renameDepartmentSchema = z.object({
   departmentId: z.string().min(1),
-  name: z.string().trim().min(1, "Department name is required.").max(80),
+  name: z.string().trim().min(1, "validation.departmentNameRequired").max(80),
 });
 
 export const requestTypeNameSchema = z.object({
-  name: z.string().trim().min(1, "Type name is required.").max(80),
+  name: z.string().trim().min(1, "validation.typeNameRequired").max(80),
 });
 
 export const renameRequestTypeSchema = z.object({
   typeId: z.string().min(1),
-  name: z.string().trim().min(1, "Type name is required.").max(80),
+  name: z.string().trim().min(1, "validation.typeNameRequired").max(80),
 });
 
 export const setActiveSchema = z.object({
@@ -117,7 +117,7 @@ export const setActiveSchema = z.object({
 
 export const logCursorSchema = z
   .string()
-  .regex(/^\d+:[0-9a-f-]{36}$/i, "That page of logs is not valid.");
+  .regex(/^\d+:[0-9a-f-]{36}$/i, "validation.logsPageInvalid");
 
 export const saveRouteStepsSchema = z.object({
   steps: z
@@ -128,8 +128,8 @@ export const saveRouteStepsSchema = z.object({
         rule: z.enum(["at_least_1", "everyone"]),
       }),
     )
-    .min(1, "Add at least one step.")
-    .max(20, "Keep the route to 20 steps or fewer."),
+    .min(1, "validation.addStep")
+    .max(20, "validation.maxSteps"),
 }).refine((value) => value.steps.some((step) => step.kind === "approve"), {
-  message: "Keep at least one approve step.",
+  message: "validation.keepApprove",
 });

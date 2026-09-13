@@ -9,12 +9,12 @@ const options: { value: Locale; label: string }[] = [
 ];
 
 export function LanguageToggle() {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, t } = useLocale();
 
   return (
     <div
       role="group"
-      aria-label="Language"
+      aria-label={t("brand.language")}
       className="inline-flex overflow-hidden rounded-sm border border-line"
     >
       {options.map((option) => {

@@ -11,6 +11,7 @@ import { WithdrawForm } from "@/components/withdraw-form";
 import { requireUser } from "@/lib/current-user";
 import { LocalDate } from "@/components/local-date";
 import { formatAmount } from "@/lib/format";
+import { getTranslator } from "@/lib/i18n-server";
 
 export default async function RequestDetailPage({
   params,
@@ -18,7 +19,11 @@ export default async function RequestDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [user, detail] = await Promise.all([requireUser(), getRequest(id)]);
+  const [user, detail, t] = await Promise.all([
+    requireUser(),
+    getRequest(id),
+    getTranslator(),
+  ]);
   const [departmentName, types] = await Promise.all([
     user.departmentId ? getActiveDepartmentName(user.departmentId) : null,
     listActiveRequestTypes(),
@@ -44,7 +49,7 @@ export default async function RequestDetailPage({
           ) : null}
           <StatusBadge status={detail.status} />
           <span className="text-[12px] text-muted">
-            Submitted <LocalDate value={detail.createdAt} />
+            {t("requestDetail.submitted")} <LocalDate value={detail.createdAt} />
           </span>
         </div>
         <h1 className="page-title mt-3">{detail.title}</h1>
@@ -55,7 +60,7 @@ export default async function RequestDetailPage({
 
       {detail.status === "changes_requested" && detail.sendBackReason ? (
         <p className="rounded-sm border border-[#208b9b] bg-[#e0f2fe] px-4 py-3 text-sm text-[#075985]">
-          Changes requested: {detail.sendBackReason}
+          {t("requestDetail.changesRequested", { reason: detail.sendBackReason })}
         </p>
       ) : null}
 
@@ -63,36 +68,36 @@ export default async function RequestDetailPage({
         <div className="space-y-6 lg:col-span-8">
           <dl className="card grid gap-4 p-6 sm:grid-cols-2">
             <div>
-              <dt className="label-caps">Requester</dt>
+              <dt className="label-caps">{t("requestDetail.requester")}</dt>
               <dd className="mt-1 text-sm text-ink">{detail.requesterName}</dd>
             </div>
             <div>
-              <dt className="label-caps">Department</dt>
+              <dt className="label-caps">{t("requestDetail.department")}</dt>
               <dd className="mt-1 text-sm text-ink">{detail.department}</dd>
             </div>
             <div>
-              <dt className="label-caps">Type</dt>
-              <dd className="mt-1 text-sm text-ink">{detail.type ?? "—"}</dd>
+              <dt className="label-caps">{t("requestDetail.type")}</dt>
+              <dd className="mt-1 text-sm text-ink">{detail.type ?? t("common.dash")}</dd>
             </div>
             <div>
-              <dt className="label-caps">Amount</dt>
+              <dt className="label-caps">{t("requestDetail.amount")}</dt>
               <dd className="mt-1 font-mono text-sm text-ink">
                 {formatAmount(detail.amount, detail.currency)}
               </dd>
             </div>
             <div className="sm:col-span-2">
-              <dt className="label-caps">Details</dt>
+              <dt className="label-caps">{t("requestDetail.details")}</dt>
               <dd className="mt-1 whitespace-pre-wrap text-sm text-ink">{detail.details}</dd>
             </div>
             {detail.rejectionReason ? (
               <div className="sm:col-span-2">
-                <dt className="label-caps">Rejection reason</dt>
+                <dt className="label-caps">{t("requestDetail.rejectionReason")}</dt>
                 <dd className="mt-1 text-sm text-ink">{detail.rejectionReason}</dd>
               </div>
             ) : null}
             {detail.decidedAt ? (
               <div className="sm:col-span-2">
-                <dt className="label-caps">Decision date</dt>
+                <dt className="label-caps">{t("requestDetail.decisionDate")}</dt>
                 <dd className="mt-1 font-mono text-sm text-ink">
                   <LocalDate value={detail.decidedAt} />
                 </dd>
@@ -100,7 +105,7 @@ export default async function RequestDetailPage({
             ) : null}
             {detail.attachments.length > 0 ? (
               <div className="sm:col-span-2">
-                <dt className="label-caps">Attachments</dt>
+                <dt className="label-caps">{t("requestDetail.attachments")}</dt>
                 <dd className="mt-2">
                   <AttachmentList items={detail.attachments} />
                 </dd>
@@ -110,12 +115,22 @@ export default async function RequestDetailPage({
 
           {detail.actions.length > 0 ? (
             <div className="card space-y-3 p-6">
-              <h2 className="section-title">History</h2>
+              <h2 className="section-title">{t("requestDetail.history")}</h2>
               <ul className="space-y-2 text-sm">
                 {detail.actions.map((action) => (
                   <li key={action.id} className="rounded-sm border border-line bg-wash px-3 py-2">
                     <span className="font-medium">{action.userName}</span>{" "}
-                    <span className="text-muted">{action.action.replace("_", " ")}</span>
+                    <span className="text-muted">
+                      {action.action === "passed"
+                        ? t("stepAction.passed")
+                        : action.action === "approved"
+                          ? t("stepAction.approved")
+                          : action.action === "sent_back"
+                            ? t("stepAction.sent_back")
+                            : action.action === "rejected"
+                              ? t("stepAction.rejected")
+                              : t("stepAction.retracted")}
+                    </span>
                     <span className="text-muted">
                       {" "}
                       · <LocalDate value={action.createdAt} />
@@ -131,20 +146,19 @@ export default async function RequestDetailPage({
 
           {detail.status === "withdrawn" ? (
             <p className="rounded-sm border border-line bg-[#f1f5f9] px-4 py-3 text-sm text-[#475569]">
-              This request was withdrawn
+              {t("requestDetail.withdrawn")}
               {detail.decidedAt ? (
                 <>
                   {" "}
-                  <LocalDate value={detail.decidedAt} />
+                  (<LocalDate value={detail.decidedAt} />)
                 </>
               ) : null}
-              . Nobody had signed off yet, so it left the inbox.
             </p>
           ) : null}
 
           {detail.isRequester && detail.status === "changes_requested" ? (
             <div className="card p-6">
-              <h2 className="section-title mb-4">Update and resubmit</h2>
+              <h2 className="section-title mb-4">{t("requestDetail.updateResubmit")}</h2>
               <RequestForm
                 defaultName={user.name}
                 departmentName={departmentName}
@@ -159,7 +173,7 @@ export default async function RequestDetailPage({
         <div className="space-y-6 lg:col-span-4">
           <div className="card space-y-4 p-6">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="section-title">Route</h2>
+              <h2 className="section-title">{t("requestDetail.route")}</h2>
               {activeIndex >= 0 ? (
                 <span className="font-mono text-[11px] text-muted">
                   {activeIndex + 1}/{detail.steps.length}
@@ -184,38 +198,45 @@ export default async function RequestDetailPage({
                       {index + 1}
                     </span>
                     <p className="text-sm font-medium text-ink">
-                      {step.kind === "review" ? "Review" : "Approve"} · {step.positionName}
-                      {step.isFinalApprove ? " · Final" : ""}
+                      {step.kind === "review" ? t("requestDetail.review") : t("requestDetail.approve")} · {step.positionName}
+                      {step.isFinalApprove ? ` · ${t("requestDetail.final")}` : ""}
                     </p>
                     <p className="label-caps mt-1">
-                      {step.state === "skipped" ? "skipped" : step.state}
+                      {step.state === "pending"
+                        ? t("stepState.pending")
+                        : step.state === "active"
+                          ? t("stepState.active")
+                          : step.state === "passed"
+                            ? t("stepState.passed")
+                            : t("stepState.skipped")}
                     </p>
                     <p className="mt-1 text-xs text-muted">
                       {step.kind === "review"
-                        ? "At least 1 reviewer must pass"
+                        ? t("requestDetail.reviewRule")
                         : step.rule === "everyone"
-                          ? "Everyone in this position must approve"
-                          : "At least 1 approver must approve"}
+                          ? t("requestDetail.everyoneRule")
+                          : t("requestDetail.anyApproverRule")}
                     </p>
                     {step.state === "skipped" ? (
                       <p className="mt-2 text-xs text-muted">
-                        Skipped because the requester already sits at or above this
-                        step on the route.
+                        {t("requestDetail.skippedReason")}
                       </p>
                     ) : step.assignees.length === 0 && step.state === "active" ? (
                       <p className="mt-2 text-xs text-[#92400e]">
-                        No one can act on this step. There is no later step to skip to.
+                        {t("requestDetail.noAssignee")}
                       </p>
                     ) : (
                       <p className="mt-2 text-xs text-muted">
-                        Assignees:{" "}
-                        {step.assignees.length === 0
-                          ? "None yet"
-                          : step.assignees
-                              .map((assignee) =>
-                                `${assignee.name}${assignee.completed ? " (done)" : ""}`,
-                              )
-                              .join(", ")}
+                        {t("requestDetail.assignees", {
+                          list:
+                            step.assignees.length === 0
+                              ? t("requestDetail.noneYet")
+                              : step.assignees
+                                  .map((assignee) =>
+                                    `${assignee.name}${assignee.completed ? t("requestDetail.done") : ""}`,
+                                  )
+                                  .join(", "),
+                        })}
                       </p>
                     )}
                   </li>

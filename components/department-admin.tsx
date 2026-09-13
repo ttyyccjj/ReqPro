@@ -8,10 +8,12 @@ import {
   type DepartmentActionState,
 } from "@/app/actions/departments";
 import { ActiveToggleForm } from "@/components/active-toggle";
+import { useT } from "@/components/locale-provider";
 
 import { inputClassCompact as inputClass } from "@/lib/ui";
 
 export function AddDepartmentForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState<DepartmentActionState, FormData>(
     addDepartment,
     undefined,
@@ -22,7 +24,7 @@ export function AddDepartmentForm() {
       <input
         className={inputClass}
         name="name"
-        placeholder="Department name"
+        placeholder={t("settings.departmentName")}
         required
         maxLength={80}
       />
@@ -31,7 +33,7 @@ export function AddDepartmentForm() {
         disabled={pending}
         className="btn-primary py-1.5"
       >
-        {pending ? "Adding…" : "Add department"}
+        {pending ? t("settings.adding") : t("settings.addDepartment")}
       </button>
       {state?.error ? (
         <span className="text-sm text-rose-700" role="alert">
@@ -49,6 +51,7 @@ export function RenameDepartmentForm({
   departmentId: string;
   name: string;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState<DepartmentActionState, FormData>(
     renameDepartment,
     undefined,
@@ -63,7 +66,7 @@ export function RenameDepartmentForm({
         disabled={pending}
         className="btn-ghost px-2 py-1"
       >
-        {pending ? "Saving…" : "Rename"}
+        {pending ? t("settings.saving") : t("settings.rename")}
       </button>
       {state?.error ? (
         <span className="text-xs text-rose-700">{state.error}</span>

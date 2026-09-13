@@ -8,27 +8,28 @@ import { BrandCredit } from "@/components/brand-credit";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useInboxLive } from "@/components/inbox-live";
+import { useT } from "@/components/locale-provider";
 import type { User } from "@/lib/db/schema";
+import type { MessageKey, Translator } from "@/lib/i18n";
 
-const titles: { test: (path: string) => boolean; label: string; crumb: string }[] = [
-  { test: (path) => path === "/", label: "My requests", crumb: "Submitted work" },
-  { test: (path) => path === "/requests/new", label: "New request", crumb: "Submit" },
-  { test: (path) => path.startsWith("/approvals"), label: "Inbox", crumb: "Waiting on you" },
-  { test: (path) => path === "/requests", label: "All requests", crumb: "Company ledger" },
-  { test: (path) => path.startsWith("/requests/"), label: "Request", crumb: "Review & sign" },
-  { test: (path) => path.startsWith("/settings"), label: "Settings", crumb: "Catalog & route" },
-  { test: (path) => path.startsWith("/people"), label: "People", crumb: "Access & positions" },
-  { test: (path) => path.startsWith("/logs"), label: "Logs", crumb: "Audit trail" },
-  { test: (path) => path.startsWith("/account"), label: "Account", crumb: "Password" },
+const titles: { test: (path: string) => boolean; label: MessageKey; crumb: MessageKey }[] = [
+  { test: (path) => path === "/", label: "nav.myRequests", crumb: "nav.myRequestsCrumb" },
+  { test: (path) => path === "/requests/new", label: "nav.newRequest", crumb: "nav.newRequestCrumb" },
+  { test: (path) => path.startsWith("/approvals"), label: "nav.inbox", crumb: "nav.inboxCrumb" },
+  { test: (path) => path === "/requests", label: "nav.allRequests", crumb: "nav.allRequestsCrumb" },
+  { test: (path) => path.startsWith("/requests/"), label: "nav.request", crumb: "nav.requestCrumb" },
+  { test: (path) => path.startsWith("/settings"), label: "nav.settings", crumb: "nav.settingsCrumb" },
+  { test: (path) => path.startsWith("/people"), label: "nav.people", crumb: "nav.peopleCrumb" },
+  { test: (path) => path.startsWith("/logs"), label: "nav.logs", crumb: "nav.logsCrumb" },
+  { test: (path) => path.startsWith("/account"), label: "nav.account", crumb: "nav.accountCrumb" },
 ];
 
-function pageMeta(pathname: string) {
-  return (
-    titles.find((item) => item.test(pathname)) ?? {
-      label: "ReqPro",
-      crumb: "Approval workspace",
-    }
-  );
+function pageMeta(pathname: string, t: Translator) {
+  const match = titles.find((item) => item.test(pathname));
+  return {
+    label: match ? t(match.label) : "ReqPro",
+    crumb: match ? t(match.crumb) : t("nav.fallbackCrumb"),
+  };
 }
 
 function navClass(active: boolean) {
@@ -47,17 +48,18 @@ function NavItems({
   onNavigate?: () => void;
 }) {
   const { count } = useInboxLive();
+  const t = useT();
   const items = [
-    { href: "/", label: "My requests", icon: "assignment", match: pathname === "/" },
+    { href: "/", label: t("nav.myRequests"), icon: "assignment", match: pathname === "/" },
     {
       href: "/requests/new",
-      label: "New request",
+      label: t("nav.newRequest"),
       icon: "post_add",
       match: pathname === "/requests/new",
     },
     {
       href: "/approvals",
-      label: "Inbox",
+      label: t("nav.inbox"),
       icon: "assignment_turned_in",
       match: pathname.startsWith("/approvals"),
       badge: count,
@@ -66,25 +68,25 @@ function NavItems({
       ? [
           {
             href: "/requests",
-            label: "All requests",
+            label: t("nav.allRequests"),
             icon: "folder_open",
             match: pathname === "/requests",
           },
           {
             href: "/settings",
-            label: "Settings",
+            label: t("nav.settings"),
             icon: "tune",
             match: pathname.startsWith("/settings"),
           },
           {
             href: "/people",
-            label: "People",
+            label: t("nav.people"),
             icon: "group",
             match: pathname.startsWith("/people"),
           },
           {
             href: "/logs",
-            label: "Logs",
+            label: t("nav.logs"),
             icon: "history_edu",
             match: pathname.startsWith("/logs"),
           },
@@ -103,7 +105,7 @@ function NavItems({
           aria-current={item.match ? "page" : undefined}
           aria-label={
             item.href === "/approvals" && item.badge
-              ? `Inbox, ${item.badge} waiting`
+              ? t("nav.inboxWaiting", { count: item.badge })
               : undefined
           }
         >
@@ -133,7 +135,8 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const meta = pageMeta(pathname);
+  const t = useT();
+  const meta = pageMeta(pathname, t);
   const isAdmin = user.role === "admin";
 
   const sidebar = (
@@ -142,7 +145,7 @@ export function AppShell({
         <div className="flex h-20 items-center border-b border-white/10 px-3">
           <BrandLogo />
         </div>
-        <p className="label-caps px-4 py-3 text-[#c4c6ce]">Approval portal</p>
+        <p className="label-caps px-4 py-3 text-[#c4c6ce]">{t("brand.portal")}</p>
         <NavItems isAdmin={isAdmin} pathname={pathname} onNavigate={() => setOpen(false)} />
       </div>
       <div className="border-t border-white/10 px-4 py-3">
@@ -160,7 +163,7 @@ export function AppShell({
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            aria-label="Close menu"
+            aria-label={t("header.closeMenu")}
             className="absolute inset-0 bg-slate/50"
             onClick={() => setOpen(false)}
           />
@@ -175,7 +178,7 @@ export function AppShell({
             <button
               type="button"
               className="rounded-sm p-1 text-muted hover:bg-canvas md:hidden"
-              aria-label="Open menu"
+              aria-label={t("header.openMenu")}
               onClick={() => setOpen(true)}
             >
               <span className="material-symbols-outlined">menu</span>
@@ -191,21 +194,21 @@ export function AppShell({
           <div className="flex min-w-0 items-center gap-3">
             <Link
               href="/account/password"
-              title="Change password"
+              title={t("header.changePassword")}
               className="min-w-0 truncate text-right leading-tight"
             >
               <span className="block truncate text-[12px] font-semibold text-ink">
                 {user.name}
               </span>
               <span className="block truncate text-[11px] text-muted">
-                {positionName ?? "No position"}
+                {positionName ?? t("header.noPosition")}
               </span>
             </Link>
             <div className="flex shrink-0 items-center gap-3">
               <LanguageToggle />
               <form action={signOutAction}>
                 <button type="submit" className="btn-ghost px-2.5 py-1 text-[12px]">
-                  Sign out
+                  {t("header.signOut")}
                 </button>
               </form>
             </div>

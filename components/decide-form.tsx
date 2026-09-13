@@ -3,15 +3,9 @@
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { decideRequest, type ActionState } from "@/app/actions/requests";
 import { ConfirmDialog, formDataFromSubmit } from "@/components/confirm-dialog";
+import { useT } from "@/components/locale-provider";
 import type { RequestCurrency, StepAction, StepKind } from "@/lib/db/schema";
 import { formatAmount } from "@/lib/format";
-
-const actionVerb: Partial<Record<StepAction, string>> = {
-  passed: "Pass",
-  approved: "Approve",
-  sent_back: "Send back",
-  rejected: "Reject",
-};
 
 export function DecideForm({
   requestId,
@@ -28,6 +22,13 @@ export function DecideForm({
   amount: number | null;
   currency: RequestCurrency | null;
 }) {
+  const t = useT();
+  const actionVerb: Partial<Record<StepAction, string>> = {
+    passed: t("decide.pass"),
+    approved: t("decide.approve"),
+    sent_back: t("decide.sendBack"),
+    rejected: t("decide.reject"),
+  };
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     decideRequest,
     undefined,
@@ -53,7 +54,7 @@ export function DecideForm({
     const money =
       amount == null ? "" : ` · ${formatAmount(amount, currency)}`;
     setPrompt({
-      title: `${verb} this request?`,
+      title: t("decide.confirmTitle", { verb }),
       body: `${ref}${money}`,
       confirmLabel: verb,
       tone:
@@ -75,15 +76,13 @@ export function DecideForm({
       >
         <input type="hidden" name="requestId" value={requestId} />
         <label className="block text-sm font-medium text-ink">
-          Comment
+          {t("decide.comment")}
           <textarea
             className="input-field w-full min-h-24"
             name="comment"
             maxLength={1000}
             placeholder={
-              isReview
-                ? "Required if you send this back"
-                : "Required if you send this back or reject"
+              isReview ? t("decide.reviewPlaceholder") : t("decide.approvePlaceholder")
             }
           />
         </label>
@@ -100,7 +99,7 @@ export function DecideForm({
             disabled={pending}
             className="btn-ok"
           >
-            {isReview ? "Pass" : "Approve"}
+            {isReview ? t("decide.pass") : t("decide.approve")}
           </button>
           <button
             type="submit"
@@ -109,7 +108,7 @@ export function DecideForm({
             disabled={pending}
             className="btn-warn"
           >
-            Send back
+            {t("decide.sendBack")}
           </button>
           {isReview ? null : (
             <button
@@ -119,7 +118,7 @@ export function DecideForm({
               disabled={pending}
               className="btn-danger"
             >
-              Reject
+              {t("decide.reject")}
             </button>
           )}
         </div>
@@ -128,7 +127,7 @@ export function DecideForm({
         open={Boolean(prompt)}
         title={prompt?.title ?? ""}
         body={prompt?.body ?? ""}
-        confirmLabel={prompt?.confirmLabel ?? "Confirm"}
+        confirmLabel={prompt?.confirmLabel ?? t("confirm.confirm")}
         tone={prompt?.tone ?? "ok"}
         pending={pending}
         onCancel={() => setPrompt(null)}

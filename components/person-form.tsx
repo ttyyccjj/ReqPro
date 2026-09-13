@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { savePerson, type UserActionState } from "@/app/actions/users";
+import { useT } from "@/components/locale-provider";
 import type { Department, Position, Role } from "@/lib/db/schema";
 import { inputClassCompact } from "@/lib/ui";
 
@@ -22,6 +23,7 @@ export function PersonAssignment({
   positions: Position[];
   departments: Department[];
 }) {
+  const t = useT();
   const formId = `person-${userId}`;
   const [state, formAction, pending] = useActionState<UserActionState, FormData>(
     savePerson,
@@ -47,8 +49,8 @@ export function PersonAssignment({
           onChange={(event) => setNextRole(event.target.value as Role)}
           className={selectClass}
         >
-          <option value="member">member</option>
-          <option value="admin">admin</option>
+          <option value="member">{t("people.member")}</option>
+          <option value="admin">{t("people.admin")}</option>
         </select>
       </td>
       <td className="min-w-0 px-3 py-3">
@@ -59,12 +61,12 @@ export function PersonAssignment({
           onChange={(event) => setNextPositionId(event.target.value)}
           className={selectClass}
         >
-          <option value="">None</option>
+          <option value="">{t("people.none")}</option>
           {positions
             .filter((position) => position.active || position.id === positionId)
             .map((position) => (
               <option key={position.id} value={position.id}>
-                {position.active ? position.name : `${position.name} (inactive)`}
+                {position.active ? position.name : t("people.inactiveOption", { name: position.name })}
               </option>
             ))}
         </select>
@@ -77,12 +79,12 @@ export function PersonAssignment({
           onChange={(event) => setNextDepartmentId(event.target.value)}
           className={selectClass}
         >
-          <option value="">None</option>
+          <option value="">{t("people.none")}</option>
           {departments
             .filter((department) => department.active || department.id === departmentId)
             .map((department) => (
               <option key={department.id} value={department.id}>
-                {department.active ? department.name : `${department.name} (inactive)`}
+                {department.active ? department.name : t("people.inactiveOption", { name: department.name })}
               </option>
             ))}
         </select>
@@ -100,7 +102,7 @@ export function PersonAssignment({
             disabled={pending}
             className="btn-ghost px-2 py-1"
           >
-            {pending ? "Saving…" : "Save"}
+            {pending ? t("people.saving") : t("people.save")}
           </button>
           {state?.error ? (
             <span className="text-xs text-rose-700" role="alert">

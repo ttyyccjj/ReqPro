@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -8,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createTranslator, type Translator } from "@/lib/i18n";
 import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
@@ -18,6 +20,7 @@ import {
 type LocaleContextValue = {
   locale: Locale;
   setLocale: (locale: Locale) => void;
+  t: Translator;
 };
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -34,6 +37,7 @@ export function LocaleProvider({
   initialLocale: Locale;
   children: ReactNode;
 }) {
+  const router = useRouter();
   const [locale, setLocaleState] = useState<Locale>(
     isLocale(initialLocale) ? initialLocale : DEFAULT_LOCALE,
   );
@@ -45,13 +49,16 @@ export function LocaleProvider({
   const value = useMemo<LocaleContextValue>(
     () => ({
       locale,
+      t: createTranslator(locale),
       setLocale(next) {
-        if (!isLocale(next)) return;
+        if (!isLocale(next) || next === locale) return;
         setLocaleState(next);
         writeLocaleCookie(next);
+        document.documentElement.lang = next;
+        router.refresh();
       },
     }),
-    [locale],
+    [locale, router],
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
@@ -63,4 +70,8 @@ export function useLocale() {
     throw new Error("useLocale must be used inside LocaleProvider");
   }
   return context;
+}
+
+export function useT() {
+  return useLocale().t;
 }

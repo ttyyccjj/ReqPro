@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/current-user";
 import { db, ensureSchema } from "@/lib/db";
 import { departments, positions, users } from "@/lib/db/schema";
+import { getTranslator } from "@/lib/i18n-server";
 import { writeSystemLog } from "@/lib/system-log";
 import { setActiveSchema, setPersonSchema } from "@/lib/validations";
 import { repairEmptyActiveSteps } from "@/lib/workflow";
@@ -50,7 +51,8 @@ export async function savePerson(
   });
 
   if (!parsed.success) {
-    return { error: "That assignment is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.assignmentInvalid") };
   }
 
   await ensureSchema();
@@ -69,7 +71,8 @@ export async function savePerson(
       .limit(1);
 
     if (!otherAdmin) {
-      return { error: "Keep at least one active admin on the account." };
+      const t = await getTranslator();
+      return { error: t("errors.keepOneAdmin") };
     }
   }
 
@@ -80,7 +83,8 @@ export async function savePerson(
       .where(eq(positions.id, parsed.data.positionId))
       .limit(1);
     if (!position?.active) {
-      return { error: "That position is not available." };
+      const t = await getTranslator();
+      return { error: t("errors.positionUnavailable") };
     }
   }
 
@@ -91,7 +95,8 @@ export async function savePerson(
       .where(eq(departments.id, parsed.data.departmentId))
       .limit(1);
     if (!department?.active) {
-      return { error: "That department is not available." };
+      const t = await getTranslator();
+      return { error: t("errors.departmentUnavailable") };
     }
   }
 
@@ -101,7 +106,8 @@ export async function savePerson(
     .where(eq(users.id, parsed.data.userId))
     .limit(1);
   if (!target) {
-    return { error: "That account no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.accountMissing") };
   }
 
   const [nextPosition] = parsed.data.positionId
@@ -161,12 +167,14 @@ export async function setUserActive(
     active: formData.get("active"),
   });
   if (!parsed.success) {
-    return { error: "That account change is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.accountChangeInvalid") };
   }
 
   const nextActive = parsed.data.active === "true";
   if (!nextActive && parsed.data.id === admin.id) {
-    return { error: "You cannot deactivate your own account." };
+    const t = await getTranslator();
+    return { error: t("errors.cannotDeactivateSelf") };
   }
 
   await ensureSchema();
@@ -176,7 +184,8 @@ export async function setUserActive(
     .where(eq(users.id, parsed.data.id))
     .limit(1);
   if (!target) {
-    return { error: "That account no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.accountMissing") };
   }
 
   if (!nextActive && target.role === "admin") {
@@ -192,7 +201,8 @@ export async function setUserActive(
       )
       .limit(1);
     if (!otherAdmin) {
-      return { error: "Keep at least one active admin on the account." };
+      const t = await getTranslator();
+      return { error: t("errors.keepOneAdmin") };
     }
   }
 

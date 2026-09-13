@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/current-user";
 import { db, ensureSchema } from "@/lib/db";
 import { requestTypes } from "@/lib/db/schema";
+import { zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { writeSystemLog } from "@/lib/system-log";
 import {
   renameRequestTypeSchema,
@@ -51,7 +53,8 @@ export async function addRequestType(
   const admin = await requireAdmin();
   const parsed = requestTypeNameSchema.safeParse({ name: formData.get("name") });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -61,7 +64,8 @@ export async function addRequestType(
     .where(eq(requestTypes.name, parsed.data.name))
     .limit(1);
   if (existing) {
-    return { error: "A type with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.typeExists") };
   }
 
   await db.insert(requestTypes).values({
@@ -89,7 +93,8 @@ export async function renameRequestType(
     name: formData.get("name"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -99,7 +104,8 @@ export async function renameRequestType(
     .where(eq(requestTypes.id, parsed.data.typeId))
     .limit(1);
   if (!current) {
-    return { error: "That type no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.typeMissing") };
   }
 
   const [duplicate] = await db
@@ -108,7 +114,8 @@ export async function renameRequestType(
     .where(eq(requestTypes.name, parsed.data.name))
     .limit(1);
   if (duplicate && duplicate.id !== parsed.data.typeId) {
-    return { error: "A type with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.typeExists") };
   }
 
   if (current.name === parsed.data.name) {
@@ -138,7 +145,8 @@ export async function setRequestTypeActive(
     active: formData.get("active"),
   });
   if (!parsed.success) {
-    return { error: "That type change is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.typeInvalid") };
   }
 
   const nextActive = parsed.data.active === "true";
@@ -150,7 +158,8 @@ export async function setRequestTypeActive(
     .where(eq(requestTypes.id, parsed.data.id))
     .limit(1);
   if (!current) {
-    return { error: "That type no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.typeMissing") };
   }
 
   if (!nextActive) {
@@ -159,7 +168,8 @@ export async function setRequestTypeActive(
       .from(requestTypes)
       .where(eq(requestTypes.active, true));
     if (activeCount <= 1) {
-      return { error: "Keep at least one active request type." };
+      const t = await getTranslator();
+      return { error: t("errors.keepOneType") };
     }
   }
 

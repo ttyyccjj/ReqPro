@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, JetBrains_Mono, Noto_Sans_JP } from "next/font/google";
 import { cookies } from "next/headers";
 import { LocaleProvider } from "@/components/locale-provider";
+import { createTranslator } from "@/lib/i18n";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale } from "@/lib/locale";
 import "./globals.css";
 
 const ibmPlex = IBM_Plex_Sans({
   variable: "--font-ibm-plex",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const notoJp = Noto_Sans_JP({
+  variable: "--font-noto-jp",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -17,10 +24,14 @@ const jetbrains = JetBrains_Mono({
   weight: ["500"],
 });
 
-export const metadata: Metadata = {
-  title: "ReqPro",
-  description: "Company request and approval workspace",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const stored = (await cookies()).get(LOCALE_COOKIE)?.value;
+  const locale = isLocale(stored) ? stored : DEFAULT_LOCALE;
+  return {
+    title: "ReqPro",
+    description: createTranslator(locale)("auth.lead"),
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const cookieStore = await cookies();
@@ -30,7 +41,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={locale}
-      className={`${ibmPlex.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${ibmPlex.variable} ${notoJp.variable} ${jetbrains.variable} h-full antialiased`}
     >
       <head>
         <link

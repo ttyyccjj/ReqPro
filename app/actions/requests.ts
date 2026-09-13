@@ -26,6 +26,8 @@ import { getActiveRequestTypeName } from "@/app/actions/request-types";
 import { countInboxFor, inboxWaitingOn } from "@/lib/inbox-count";
 import { notifyInbox } from "@/lib/inbox-hub";
 import { nextRequestNumber } from "@/lib/request-number";
+import { translateThrown, zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { requestRef, writeSystemLog } from "@/lib/system-log";
 import { retractSchema, requestSchema, stepActionSchema } from "@/lib/validations";
 import {
@@ -62,21 +64,25 @@ export async function createRequest(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkForm") };
   }
 
   if (!user.departmentId) {
-    return { error: "Ask an admin to assign your department before you submit." };
+    const t = await getTranslator();
+    return { error: t("errors.assignDepartment") };
   }
 
   const department = await getActiveDepartmentName(user.departmentId);
   if (!department) {
-    return { error: "Ask an admin to assign your department before you submit." };
+    const t = await getTranslator();
+    return { error: t("errors.assignDepartment") };
   }
 
   const typeName = await getActiveRequestTypeName(parsed.data.typeId);
   if (!typeName) {
-    return { error: "Choose an active request type." };
+    const t = await getTranslator();
+    return { error: t("errors.chooseActiveType") };
   }
 
   const incoming = filesFromFormData(formData);
@@ -84,7 +90,8 @@ export async function createRequest(
     assertAttachmentLimits(incoming, 0);
   } catch (error) {
     if (error instanceof AttachmentError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "validation.checkForm") };
     }
     throw error;
   }
@@ -133,7 +140,8 @@ export async function createRequest(
     await db.delete(requestAttachments).where(eq(requestAttachments.requestId, id));
     await db.delete(requests).where(eq(requests.id, id));
     if (error instanceof AttachmentError || error instanceof WorkflowError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "validation.checkForm") };
     }
     throw error;
   }
@@ -158,21 +166,25 @@ export async function updateRequest(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkForm") };
   }
 
   if (!user.departmentId) {
-    return { error: "Ask an admin to assign your department before you resubmit." };
+    const t = await getTranslator();
+    return { error: t("errors.assignDepartmentResubmit") };
   }
 
   const department = await getActiveDepartmentName(user.departmentId);
   if (!department) {
-    return { error: "Ask an admin to assign your department before you resubmit." };
+    const t = await getTranslator();
+    return { error: t("errors.assignDepartmentResubmit") };
   }
 
   const typeName = await getActiveRequestTypeName(parsed.data.typeId);
   if (!typeName) {
-    return { error: "Choose an active request type." };
+    const t = await getTranslator();
+    return { error: t("errors.chooseActiveType") };
   }
 
   await ensureSchema();
@@ -185,7 +197,8 @@ export async function updateRequest(
     .where(eq(requestAttachments.requestId, requestId));
   const existingIds = new Set(existing.map((file) => file.id));
   if (removeIds.some((id) => !existingIds.has(id))) {
-    return { error: "Those attachments could not be updated." };
+    const t = await getTranslator();
+    return { error: t("errors.attachmentsUpdateFailed") };
   }
 
   const remaining = existing.filter((file) => !removeIds.includes(file.id));
@@ -193,7 +206,8 @@ export async function updateRequest(
     assertAttachmentLimits(incoming, remaining.length);
   } catch (error) {
     if (error instanceof AttachmentError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "validation.checkForm") };
     }
     throw error;
   }
@@ -205,7 +219,8 @@ export async function updateRequest(
   } catch (error) {
     await deleteStoredFiles(saved.map((file) => file.storedName));
     if (error instanceof AttachmentError || error instanceof WorkflowError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "validation.checkForm") };
     }
     throw error;
   }
@@ -459,14 +474,16 @@ export async function withdrawRequest(
   const user = await requireUser();
   const requestId = String(formData.get("requestId") ?? "");
   if (!requestId) {
-    return { error: "That request could not be withdrawn." };
+    const t = await getTranslator();
+    return { error: t("errors.withdrawFailed") };
   }
 
   try {
     await withdrawOpenRequest(requestId, user.id);
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "errors.withdrawFailed") };
     }
     throw error;
   }
@@ -487,7 +504,8 @@ export async function decideRequest(
   });
 
   if (!parsed.success) {
-    return { error: "That action is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.invalidAction") };
   }
 
   try {
@@ -499,7 +517,8 @@ export async function decideRequest(
     });
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "errors.invalidAction") };
     }
     throw error;
   }
@@ -519,14 +538,16 @@ export async function retractRequest(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Add a short reason for this retract." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.retractReason") };
   }
 
   try {
     await retractDecision(parsed.data.requestId, user.id, parsed.data.comment);
   } catch (error) {
     if (error instanceof WorkflowError) {
-      return { error: error.message };
+      const t = await getTranslator();
+      return { error: translateThrown(t, error, "validation.retractReason") };
     }
     throw error;
   }

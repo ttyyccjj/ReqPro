@@ -38,7 +38,7 @@
   --color-wash: var(--wash);
   --color-amber: var(--amber);
   --color-ok: var(--ok);
-  --font-sans: var(--font-ibm-plex);
+  --font-sans: var(--font-ibm-plex), var(--font-noto-jp);
   --font-mono: var(--font-jetbrains);
 }
 
@@ -46,6 +46,10 @@ body {
   background: var(--canvas);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+html[lang="ja"] body {
+  font-family: var(--font-noto-jp), var(--font-ibm-plex), system-ui, sans-serif;
 }
 
 .material-symbols-outlined {

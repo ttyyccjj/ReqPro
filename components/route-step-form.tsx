@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition, type ReactNode } from "react";
 import { saveRouteSteps } from "@/app/actions/form-route";
+import { useT } from "@/components/locale-provider";
 import type { RouteStep, StepKind, StepRule } from "@/lib/db/schema";
 
 type PositionOption = {
@@ -60,6 +61,7 @@ function StepFields({
   rule: StepRule;
   onChange: (next: { kind: StepKind; positionId: string; rule: StepRule }) => void;
 }) {
+  const t = useT();
   return (
     <div className={fieldsClass}>
       <div className={typeClass}>
@@ -74,10 +76,10 @@ function StepFields({
             });
           }}
           className={selectClass}
-          aria-label="Step type"
+          aria-label={t("route.stepType")}
         >
-          <option value="review">Review</option>
-          <option value="approve">Approve</option>
+          <option value="review">{t("stepKind.review")}</option>
+          <option value="approve">{t("stepKind.approve")}</option>
         </select>
       </div>
       <div className={positionClass}>
@@ -88,13 +90,13 @@ function StepFields({
           }
           className={selectClass}
           required
-          aria-label="Position"
+          aria-label={t("route.position")}
         >
           {positions
             .filter((position) => position.active || position.id === positionId)
             .map((position) => (
               <option key={position.id} value={position.id}>
-                {position.active ? position.name : `${position.name} (inactive)`}
+                {position.active ? position.name : t("people.inactiveOption", { name: position.name })}
               </option>
             ))}
         </select>
@@ -107,10 +109,10 @@ function StepFields({
           }
           className={selectClass}
           disabled={kind === "review"}
-          aria-label="Who must act"
+          aria-label={t("route.whoMustAct")}
         >
-          <option value="at_least_1">Any one person</option>
-          <option value="everyone">Everyone</option>
+          <option value="at_least_1">{t("route.anyOne")}</option>
+          <option value="everyone">{t("route.everyone")}</option>
         </select>
       </div>
     </div>
@@ -149,13 +151,14 @@ function IconButton({
 }
 
 function RouteStepListHeader() {
+  const t = useT();
   return (
     <div className={`hidden border-b border-line bg-slate text-xs font-semibold tracking-[0.06em] text-[#f1f5f9] uppercase sm:flex ${rowClass}`}>
       <span className={`${indexClass} text-[#94a3b8]`}>#</span>
       <div className={fieldsClass}>
-        <span className={typeClass}>Type</span>
-        <span className={positionClass}>Position</span>
-        <span className={neededClass}>Needed</span>
+        <span className={typeClass}>{t("route.type")}</span>
+        <span className={positionClass}>{t("route.position")}</span>
+        <span className={neededClass}>{t("route.needed")}</span>
       </div>
       <span className={`${actionsClass} text-[#94a3b8]`}> </span>
     </div>
@@ -169,6 +172,7 @@ export function RouteStepsEditor({
   positions: PositionOption[];
   initialSteps: RouteStep[];
 }) {
+  const t = useT();
   const assignable = positions.filter((position) => position.active);
   const [steps, setSteps] = useState(() => toDraft(initialSteps));
   const [addKind, setAddKind] = useState<StepKind>("approve");
@@ -215,7 +219,7 @@ export function RouteStepsEditor({
         target?.kind === "approve" &&
         current.filter((step) => step.kind === "approve").length <= 1
       ) {
-        setError("Keep at least one approve step.");
+        setError(t("route.keepApprove"));
         return current;
       }
       return current.filter((step) => step.key !== key);
@@ -224,11 +228,11 @@ export function RouteStepsEditor({
 
   function addStep() {
     if (!addPositionId) {
-      setError("Add a position before you add a step.");
+      setError(t("route.addPositionBeforeStep"));
       return;
     }
     if (steps.length >= 20) {
-      setError("Keep the route to 20 steps or fewer.");
+      setError(t("route.maxSteps"));
       return;
     }
 
@@ -260,17 +264,15 @@ export function RouteStepsEditor({
   return (
     <div>
       <div className="mb-3">
-        <h2 className="section-title">Steps</h2>
-        <p className="page-lead">
-          Requests move down this list. Edit freely, then save the whole route.
-        </p>
+        <h2 className="section-title">{t("route.title")}</h2>
+        <p className="page-lead">{t("route.lead")}</p>
       </div>
 
       <div className="card overflow-hidden">
         <RouteStepListHeader />
         {steps.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-muted">
-            Add an approve step to start the route.
+            {t("route.empty")}
           </p>
         ) : (
           <ol>
@@ -310,21 +312,21 @@ export function RouteStepsEditor({
 
                     <div className={actionsClass}>
                       <IconButton
-                        label="Move up"
+                        label={t("route.moveUp")}
                         disabled={index === 0}
                         onClick={() => moveStep(index, -1)}
                       >
                         <ChevronUp />
                       </IconButton>
                       <IconButton
-                        label="Move down"
+                        label={t("route.moveDown")}
                         disabled={index === steps.length - 1}
                         onClick={() => moveStep(index, 1)}
                       >
                         <ChevronDown />
                       </IconButton>
                       <IconButton
-                        label="Remove step"
+                        label={t("route.removeStep")}
                         danger
                         onClick={() => removeStep(step.key)}
                       >
@@ -336,11 +338,11 @@ export function RouteStepsEditor({
                   {index === lastApproveIndex || emptyPosition ? (
                     <div className="flex flex-wrap gap-x-3 px-3 pb-2 text-xs sm:pl-[3.25rem]">
                       {index === lastApproveIndex ? (
-                        <span className="text-muted">Final decision</span>
+                        <span className="text-muted">{t("route.finalDecision")}</span>
                       ) : null}
                       {emptyPosition ? (
                         <span className="text-amber-800">
-                          No one holds this position yet.
+                          {t("route.emptyPosition")}
                         </span>
                       ) : null}
                     </div>
@@ -354,7 +356,7 @@ export function RouteStepsEditor({
         <div className="border-t border-dashed border-line bg-canvas/70">
           {assignable.length === 0 ? (
             <p className="px-3 py-3 text-sm text-muted">
-              Add an active position before you add a step.
+              {t("route.addPositionFirst")}
             </p>
           ) : (
             <div className={rowClass}>
@@ -380,7 +382,7 @@ export function RouteStepsEditor({
                   onClick={addStep}
                   className="btn-ghost h-8 w-full py-0"
                 >
-                  Add
+                  {t("route.add")}
                 </button>
               </div>
             </div>
@@ -392,9 +394,9 @@ export function RouteStepsEditor({
             {error ? (
               <span className="text-rose-700">{error}</span>
             ) : dirty ? (
-              "You have unsaved changes."
+              t("route.unsaved")
             ) : (
-              "No unsaved changes."
+              t("route.saved")
             )}
           </p>
           <button
@@ -403,7 +405,7 @@ export function RouteStepsEditor({
             disabled={!dirty || pending}
             className="btn-primary h-8 py-0 disabled:cursor-not-allowed"
           >
-            {pending ? "Saving…" : "Save route"}
+            {pending ? t("route.saving") : t("route.saveRoute")}
           </button>
         </div>
       </div>

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { StatusBadge } from "@/components/status-badge";
+import { useT } from "@/components/locale-provider";
 import type { Request } from "@/lib/db/schema";
 import { LocalDate } from "@/components/local-date";
 import { formatAmount } from "@/lib/format";
@@ -13,9 +16,10 @@ export function RequestTypeCell({
   type: string | null;
   number: string | null;
 }) {
+  const t = useT();
   return (
     <div>
-      <p>{type ?? "—"}</p>
+      <p>{type ?? t("common.dash")}</p>
       {number ? (
         <p className="mt-0.5 font-mono text-xs text-muted">{number}</p>
       ) : null}
@@ -42,19 +46,20 @@ export function RequestTable({
   items: RequestRow[];
   showRequester?: boolean;
 }) {
+  const t = useT();
   return (
     <div className="card mt-6 overflow-x-auto">
       <table className="data-table">
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Title</th>
-            {showRequester ? <th>Requester</th> : null}
-            <th>Department</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Waiting on</th>
-            <th>Submitted</th>
+            <th>{t("table.type")}</th>
+            <th>{t("table.title")}</th>
+            {showRequester ? <th>{t("table.requester")}</th> : null}
+            <th>{t("table.department")}</th>
+            <th>{t("table.amount")}</th>
+            <th>{t("table.status")}</th>
+            <th>{t("table.waitingOn")}</th>
+            <th>{t("table.submitted")}</th>
           </tr>
         </thead>
         <tbody>
@@ -73,7 +78,7 @@ export function RequestTable({
                 <StatusBadge status={item.status} />
               </td>
               <td>
-                {item.status === "pending" && item.waitingOn ? item.waitingOn : "—"}
+                {item.status === "pending" && item.waitingOn ? item.waitingOn : t("common.dash")}
               </td>
               <td className="font-mono">
                 <LocalDate value={item.createdAt} />

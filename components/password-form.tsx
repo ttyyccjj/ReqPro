@@ -6,9 +6,11 @@ import {
   type ChangePasswordState,
 } from "@/app/actions/auth";
 
+import { useT } from "@/components/locale-provider";
 import { inputClass } from "@/lib/ui";
 
 export function PasswordForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState<ChangePasswordState, FormData>(
     changePasswordAction,
     undefined,
@@ -17,7 +19,7 @@ export function PasswordForm() {
   return (
     <form action={formAction} className="space-y-4">
       <label className="block text-sm font-medium text-ink">
-        Current password
+        {t("account.current")}
         <input
           className={inputClass}
           name="currentPassword"
@@ -28,7 +30,7 @@ export function PasswordForm() {
         />
       </label>
       <label className="block text-sm font-medium text-ink">
-        New password
+        {t("account.next")}
         <input
           className={inputClass}
           name="password"
@@ -40,7 +42,7 @@ export function PasswordForm() {
         />
       </label>
       <label className="block text-sm font-medium text-ink">
-        Confirm new password
+        {t("account.confirm")}
         <input
           className={inputClass}
           name="confirmPassword"
@@ -66,7 +68,7 @@ export function PasswordForm() {
         disabled={pending}
         className="btn-primary"
       >
-        {pending ? "Saving…" : "Update password"}
+        {pending ? t("account.saving") : t("account.update")}
       </button>
     </form>
   );

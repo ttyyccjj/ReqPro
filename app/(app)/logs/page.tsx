@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { listLogsPage } from "@/app/actions/logs";
 import { LogsList } from "@/components/logs-list";
 import { getCurrentUser } from "@/lib/current-user";
+import { getTranslator } from "@/lib/i18n-server";
 
 export default async function LogsPage() {
   const user = await getCurrentUser();
@@ -9,15 +10,12 @@ export default async function LogsPage() {
     redirect("/");
   }
 
-  const page = await listLogsPage();
+  const [page, t] = await Promise.all([listLogsPage(), getTranslator()]);
 
   return (
     <section>
-      <h1 className="page-title">Logs</h1>
-      <p className="page-lead">
-        Who changed what, newest first. The first 50 events load here; more
-        appear as you scroll.
-      </p>
+      <h1 className="page-title">{t("logs.title")}</h1>
+      <p className="page-lead">{t("logs.lead")}</p>
       <LogsList initialItems={page.items} initialCursor={page.nextCursor} />
     </section>
   );

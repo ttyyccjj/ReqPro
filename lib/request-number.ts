@@ -25,7 +25,7 @@ export async function nextRequestNumber(at = new Date()) {
   });
   const value = Number(result.rows[0]?.last_value);
   if (!Number.isInteger(value) || value < 1) {
-    throw new Error("Could not assign a request number.");
+    throw new Error("errors.requestNumberFailed");
   }
   return formatRequestNumber(year, value);
 }

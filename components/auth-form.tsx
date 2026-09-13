@@ -4,9 +4,11 @@ import { useActionState, useState } from "react";
 import { signInAction, signUpAction, type AuthFormState } from "@/app/actions/auth";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageToggle } from "@/components/language-toggle";
+import { useT } from "@/components/locale-provider";
 import { inputClass } from "@/lib/ui";
 
 export function AuthForm() {
+  const t = useT();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
 
@@ -21,9 +23,9 @@ export function AuthForm() {
         </div>
       </div>
       <h1 className="text-xl font-semibold text-ink">
-        {mode === "signin" ? "Sign in to ReqPro" : "Create a ReqPro account"}
+        {mode === "signin" ? t("auth.signInTitle") : t("auth.signUpTitle")}
       </h1>
-      <p className="page-lead">Company request and approval workspace.</p>
+      <p className="page-lead">{t("auth.lead")}</p>
 
       <AuthFields key={mode} mode={mode} email={email} onEmailChange={setEmail} />
 
@@ -32,9 +34,7 @@ export function AuthForm() {
         className="mt-4 text-sm text-muted underline hover:text-ink"
         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
       >
-        {mode === "signin"
-          ? "Need an account? Sign up"
-          : "Already have an account? Sign in"}
+        {mode === "signin" ? t("auth.needAccount") : t("auth.haveAccount")}
       </button>
     </div>
   );
@@ -54,6 +54,7 @@ function AuthFields({
     action,
     undefined,
   );
+  const t = useT();
   const [name, setName] = useState("");
 
   return (
@@ -64,7 +65,7 @@ function AuthFields({
     >
       {mode === "signup" ? (
         <label className="block text-sm font-medium text-ink">
-          Name
+          {t("auth.name")}
           <input
             className={inputClass}
             name="name"
@@ -76,7 +77,7 @@ function AuthFields({
         </label>
       ) : null}
       <label className="block text-sm font-medium text-ink">
-        Email
+        {t("auth.email")}
         <input
           className={inputClass}
           name="email"
@@ -88,7 +89,7 @@ function AuthFields({
         />
       </label>
       <label className="block text-sm font-medium text-ink">
-        Password
+        {t("auth.password")}
         <input
           className={inputClass}
           name="password"
@@ -104,7 +105,7 @@ function AuthFields({
         </p>
       ) : null}
       <button type="submit" disabled={pending} className="btn-primary w-full">
-        {pending ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+        {pending ? t("auth.wait") : mode === "signin" ? t("auth.signIn") : t("auth.createAccount")}
       </button>
     </form>
   );

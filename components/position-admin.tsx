@@ -8,9 +8,11 @@ import {
   type PositionActionState,
 } from "@/app/actions/positions";
 import { ActiveToggleForm } from "@/components/active-toggle";
+import { useT } from "@/components/locale-provider";
 import { inputClassCompact as inputClass } from "@/lib/ui";
 
 export function AddPositionForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState<PositionActionState, FormData>(
     addPosition,
     undefined,
@@ -18,13 +20,13 @@ export function AddPositionForm() {
 
   return (
     <form action={formAction} className="flex flex-wrap items-center gap-2">
-      <input className={inputClass} name="name" placeholder="Position name" required maxLength={80} />
+      <input className={inputClass} name="name" placeholder={t("settings.positionName")} required maxLength={80} />
       <button
         type="submit"
         disabled={pending}
         className="btn-primary py-1.5"
       >
-        {pending ? "Adding…" : "Add position"}
+        {pending ? t("settings.adding") : t("settings.addPosition")}
       </button>
       {state?.error ? (
         <span className="text-sm text-rose-700" role="alert">
@@ -42,6 +44,7 @@ export function RenamePositionForm({
   positionId: string;
   name: string;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState<PositionActionState, FormData>(
     renamePosition,
     undefined,
@@ -56,7 +59,7 @@ export function RenamePositionForm({
         disabled={pending}
         className="btn-ghost px-2 py-1"
       >
-        {pending ? "Saving…" : "Rename"}
+        {pending ? t("settings.saving") : t("settings.rename")}
       </button>
       {state?.error ? (
         <span className="text-xs text-rose-700">{state.error}</span>

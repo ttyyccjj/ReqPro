@@ -1,3 +1,6 @@
+"use client";
+
+import { useLocale } from "@/components/locale-provider";
 import type { RequestStatus } from "@/lib/db/schema";
 
 const styles: Record<RequestStatus, string> = {
@@ -8,18 +11,19 @@ const styles: Record<RequestStatus, string> = {
   withdrawn: "border-l-[3px] border-[#94a3b8] bg-[#f1f5f9] text-[#475569]",
 };
 
-const labels: Record<RequestStatus, string> = {
-  pending: "Pending",
-  changes_requested: "Changes requested",
-  approved: "Approved",
-  rejected: "Rejected",
-  withdrawn: "Withdrawn",
-};
-
 export function StatusBadge({ status }: { status: RequestStatus }) {
+  const { locale, t } = useLocale();
+  const labels: Record<RequestStatus, string> = {
+    pending: t("status.pending"),
+    changes_requested: t("status.changes_requested"),
+    approved: t("status.approved"),
+    rejected: t("status.rejected"),
+    withdrawn: t("status.withdrawn"),
+  };
+
   return (
     <span
-      className={`inline-flex rounded-sm px-2 py-0.5 text-[11px] font-semibold tracking-[0.06em] uppercase ${styles[status]}`}
+      className={`inline-flex rounded-sm px-2 py-0.5 text-[11px] font-semibold tracking-[0.06em] ${locale === "en" ? "uppercase" : ""} ${styles[status]}`}
     >
       {labels[status]}
     </span>

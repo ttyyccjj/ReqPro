@@ -5,6 +5,7 @@ import { listUsers, setUserActive } from "@/app/actions/users";
 import { ActiveToggleForm, InactiveBadge } from "@/components/active-toggle";
 import { PersonAssignment } from "@/components/person-form";
 import { getCurrentUser } from "@/lib/current-user";
+import { getTranslator } from "@/lib/i18n-server";
 import { LocalDate } from "@/components/local-date";
 
 export default async function PeoplePage() {
@@ -13,33 +14,30 @@ export default async function PeoplePage() {
     redirect("/");
   }
 
-  const [people, positions, departmentRows] = await Promise.all([
+  const [people, positions, departmentRows, t] = await Promise.all([
     listUsers(),
     listPositions(),
     listDepartments(),
+    getTranslator(),
   ]);
 
   return (
     <section>
-      <h1 className="page-title">People</h1>
-      <p className="page-lead">
-        App access is admin or member. Position decides who acts on a route
-        step. Department is the requester&apos;s team on a request. Deactivate
-        an account instead of deleting it so history stays intact.
-      </p>
+      <h1 className="page-title">{t("people.title")}</h1>
+      <p className="page-lead">{t("people.lead")}</p>
 
       <div className="card mt-6 overflow-x-auto">
         <table className="data-table table-fixed">
           <thead>
             <tr>
-              <th className="w-[28%]">Person</th>
-              <th className="w-[12%]">Role</th>
-              <th className="w-[20%]">Position</th>
-              <th className="w-[18%]">Department</th>
+              <th className="w-[28%]">{t("people.person")}</th>
+              <th className="w-[12%]">{t("people.role")}</th>
+              <th className="w-[20%]">{t("people.position")}</th>
+              <th className="w-[18%]">{t("people.department")}</th>
               <th className="w-[8%]">
-                <span className="sr-only">Save assignment</span>
+                <span className="sr-only">{t("people.saveAssignment")}</span>
               </th>
-              <th className="w-[14%]">Status</th>
+              <th className="w-[14%]">{t("people.status")}</th>
             </tr>
           </thead>
           <tbody>

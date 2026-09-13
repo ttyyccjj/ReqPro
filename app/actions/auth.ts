@@ -10,6 +10,8 @@ import { db, ensureSchema, getDefaultPositionId } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { writeSystemLog } from "@/lib/system-log";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { changePasswordSchema, signInSchema, signUpSchema } from "@/lib/validations";
 
 export type AuthFormState = { error?: string } | undefined;
@@ -26,7 +28,8 @@ async function limitAuth(action: string): Promise<string | undefined> {
     headerStore.get("x-real-ip");
 
   if (!rateLimit(clientKey(ip, action))) {
-    return "Too many attempts. Try again in 15 minutes.";
+    const t = await getTranslator();
+    return t("errors.tooManyAttempts");
   }
 }
 
@@ -42,7 +45,8 @@ export async function signInAction(
     password: formText(formData, "password"),
   });
   if (!parsed.success) {
-    return { error: "Enter a valid email and password." };
+    const t = await getTranslator();
+    return { error: t("errors.invalidEmailPassword") };
   }
 
   await ensureSchema();
@@ -54,7 +58,8 @@ export async function signInAction(
   if (account && !account.active) {
     const matches = await bcrypt.compare(parsed.data.password, account.passwordHash);
     if (matches) {
-      return { error: "This account is deactivated." };
+      const t = await getTranslator();
+      return { error: t("errors.accountDeactivated") };
     }
   }
 
@@ -66,7 +71,8 @@ export async function signInAction(
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Invalid email or password." };
+      const t = await getTranslator();
+      return { error: t("errors.invalidCredentials") };
     }
     throw error;
   }
@@ -85,7 +91,8 @@ export async function signUpAction(
     password: formText(formData, "password"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkForm") };
   }
 
   await ensureSchema();
@@ -97,7 +104,8 @@ export async function signUpAction(
     .limit(1);
 
   if (existing) {
-    return { error: "An account with that email already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.emailTaken") };
   }
 
   const [{ value: userCount }] = await db.select({ value: count() }).from(users);
@@ -129,7 +137,8 @@ export async function signUpAction(
     });
   } catch (error) {
     if (error instanceof AuthError) {
-      return { error: "Account created, but sign-in failed. Try signing in." };
+      const t = await getTranslator();
+      return { error: t("errors.signInAfterCreate") };
     }
     throw error;
   }
@@ -165,7 +174,8 @@ export async function changePasswordAction(
     confirmPassword: formText(formData, "confirmPassword"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the form and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkForm") };
   }
 
   await ensureSchema();
@@ -176,12 +186,14 @@ export async function changePasswordAction(
     .limit(1);
 
   if (!account) {
-    return { error: "Your account could not be updated." };
+    const t = await getTranslator();
+    return { error: t("errors.accountUpdateFailed") };
   }
 
   const matches = await bcrypt.compare(parsed.data.currentPassword, account.passwordHash);
   if (!matches) {
-    return { error: "Current password is incorrect." };
+    const t = await getTranslator();
+    return { error: t("errors.currentPasswordWrong") };
   }
 
   await db
@@ -195,5 +207,6 @@ export async function changePasswordAction(
     summary: "Changed password",
   });
 
-  return { success: "Password updated." };
+  const t = await getTranslator();
+  return { success: t("errors.passwordUpdated") };
 }

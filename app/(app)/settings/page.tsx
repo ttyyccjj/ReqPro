@@ -21,6 +21,7 @@ import {
 } from "@/components/position-admin";
 import { RouteStepsEditor } from "@/components/route-step-form";
 import { getCurrentUser } from "@/lib/current-user";
+import { getTranslator } from "@/lib/i18n-server";
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
@@ -28,35 +29,28 @@ export default async function SettingsPage() {
     redirect("/");
   }
 
-  const [positions, steps, departmentRows, typeRows] = await Promise.all([
+  const [positions, steps, departmentRows, typeRows, t] = await Promise.all([
     listPositions(),
     listRouteSteps(),
     listDepartments(),
     listRequestTypes(),
+    getTranslator(),
   ]);
 
   return (
     <section className="space-y-8">
       <div>
-        <h1 className="page-title">Settings</h1>
-        <p className="page-lead">
-          Request types, departments, positions, and the approval steps that
-          new requests follow. The last approve step is the final decision. A
-          requester skips every step at or below their own position.
-        </p>
+        <h1 className="page-title">{t("settings.title")}</h1>
+        <p className="page-lead">{t("settings.lead")}</p>
       </div>
 
       <div className="space-y-3">
         <div>
-          <h2 className="section-title">Request types</h2>
-          <p className="page-lead">
-            Group requests as Purchase, Travel, and so on. The same form is
-            used for every type. Rename changes the live label only. Old
-            requests keep the type they were submitted with.
-          </p>
+          <h2 className="section-title">{t("settings.requestTypes")}</h2>
+          <p className="page-lead">{t("settings.requestTypesLead")}</p>
         </div>
         {typeRows.length === 0 ? (
-          <p className="page-lead">Add a type so people can submit requests.</p>
+          <p className="page-lead">{t("settings.addTypeHint")}</p>
         ) : (
           <ul className="space-y-2">
             {typeRows.map((type) => (
@@ -83,16 +77,11 @@ export default async function SettingsPage() {
 
       <div className="space-y-3">
         <div>
-          <h2 className="section-title">Departments</h2>
-          <p className="page-lead">
-            Create the department names here, then assign people on the People
-            page. A request uses the requester&apos;s department. Rename
-            changes the live label only. Old requests keep the name they were
-            submitted with.
-          </p>
+          <h2 className="section-title">{t("settings.departments")}</h2>
+          <p className="page-lead">{t("settings.departmentsLead")}</p>
         </div>
         {departmentRows.length === 0 ? (
-          <p className="page-lead">Add a department so people can submit requests.</p>
+          <p className="page-lead">{t("settings.addDepartmentHint")}</p>
         ) : (
           <ul className="space-y-2">
             {departmentRows.map((department) => (
@@ -121,7 +110,7 @@ export default async function SettingsPage() {
       </div>
 
       <div className="space-y-3">
-        <h2 className="section-title">Positions</h2>
+        <h2 className="section-title">{t("settings.positions")}</h2>
         <ul className="space-y-2">
           {positions.map((position) => (
             <li
@@ -137,8 +126,8 @@ export default async function SettingsPage() {
                 </p>
                 <p className="text-xs text-muted">
                   {position.holderCount === 0
-                    ? "No one assigned"
-                    : `${position.holderCount} assigned`}
+                    ? t("settings.noOneAssigned")
+                    : t("settings.assignedCount", { count: position.holderCount })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">

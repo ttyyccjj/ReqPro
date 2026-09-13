@@ -3,8 +3,10 @@
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { withdrawRequest, type ActionState } from "@/app/actions/requests";
 import { ConfirmDialog, formDataFromSubmit } from "@/components/confirm-dialog";
+import { useT } from "@/components/locale-provider";
 
 export function WithdrawForm({ requestId }: { requestId: string }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     withdrawRequest,
     undefined,
@@ -27,8 +29,7 @@ export function WithdrawForm({ requestId }: { requestId: string }) {
       >
         <input type="hidden" name="requestId" value={requestId} />
         <p className="text-sm text-muted">
-          You can withdraw this request while nobody has passed, approved, sent
-          it back, or rejected it.
+          {t("withdraw.help")}
         </p>
         {state?.error ? (
           <p className="mt-2 text-sm text-rose-700" role="alert">
@@ -40,14 +41,14 @@ export function WithdrawForm({ requestId }: { requestId: string }) {
           disabled={pending}
           className="btn-ghost mt-3"
         >
-          {pending ? "Withdrawing…" : "Withdraw request"}
+          {pending ? t("withdraw.pending") : t("withdraw.button")}
         </button>
       </form>
       <ConfirmDialog
         open={open}
-        title="Withdraw this request?"
-        body="It will leave everyone's inbox. You can submit a new request if you still need it."
-        confirmLabel="Withdraw"
+        title={t("withdraw.confirmTitle")}
+        body={t("withdraw.confirmBody")}
+        confirmLabel={t("withdraw.confirm")}
         tone="danger"
         pending={pending}
         onCancel={() => {

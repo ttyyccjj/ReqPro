@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/current-user";
 import { db, ensureSchema } from "@/lib/db";
 import { departments, users } from "@/lib/db/schema";
+import { zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { writeSystemLog } from "@/lib/system-log";
 import {
   departmentNameSchema,
@@ -42,7 +44,8 @@ export async function addDepartment(
   const admin = await requireAdmin();
   const parsed = departmentNameSchema.safeParse({ name: formData.get("name") });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -52,7 +55,8 @@ export async function addDepartment(
     .where(eq(departments.name, parsed.data.name))
     .limit(1);
   if (existing) {
-    return { error: "A department with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.departmentExists") };
   }
 
   await db.insert(departments).values({
@@ -80,7 +84,8 @@ export async function renameDepartment(
     name: formData.get("name"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -90,7 +95,8 @@ export async function renameDepartment(
     .where(eq(departments.id, parsed.data.departmentId))
     .limit(1);
   if (!current) {
-    return { error: "That department no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.departmentMissing") };
   }
 
   const [duplicate] = await db
@@ -99,7 +105,8 @@ export async function renameDepartment(
     .where(eq(departments.name, parsed.data.name))
     .limit(1);
   if (duplicate && duplicate.id !== parsed.data.departmentId) {
-    return { error: "A department with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.departmentExists") };
   }
 
   if (current.name === parsed.data.name) {
@@ -129,7 +136,8 @@ export async function setDepartmentActive(
     active: formData.get("active"),
   });
   if (!parsed.success) {
-    return { error: "That department change is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.departmentInvalid") };
   }
 
   const nextActive = parsed.data.active === "true";
@@ -141,7 +149,8 @@ export async function setDepartmentActive(
     .where(eq(departments.id, parsed.data.id))
     .limit(1);
   if (!current) {
-    return { error: "That department no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.departmentMissing") };
   }
 
   if (!nextActive) {
@@ -151,7 +160,8 @@ export async function setDepartmentActive(
       .where(eq(users.departmentId, parsed.data.id))
       .limit(1);
     if (assigned) {
-      return { error: "Move people out of this department first." };
+      const t = await getTranslator();
+      return { error: t("errors.departmentInUse") };
     }
   }
 

@@ -30,9 +30,12 @@ const ALLOWED_EXTENSIONS = new Set(Object.keys(EXT_TO_MIME));
 const STORED_NAME_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-z0-9]+$/i;
 
 export class AttachmentError extends Error {
-  constructor(message: string) {
+  params?: Record<string, string | number>;
+
+  constructor(message: string, params?: Record<string, string | number>) {
     super(message);
     this.name = "AttachmentError";
+    this.params = params;
   }
 }
 
@@ -43,12 +46,6 @@ export type SavedAttachment = {
   mimeType: string;
   sizeBytes: number;
 };
-
-export const ATTACHMENT_ACCEPT =
-  ".pdf,.png,.jpg,.jpeg,.webp,.gif,.txt,.csv,.docx,.xlsx,.pptx";
-
-export const ATTACHMENT_HINT =
-  "PDF, images, Word/Excel/PowerPoint, text, or CSV. Up to 5 files, 5 MB each.";
 
 export function filesFromFormData(formData: FormData, field = "attachments") {
   return formData
@@ -69,7 +66,7 @@ export function removeIdsFromFormData(formData: FormData) {
 
 export function assertAttachmentLimits(files: File[], existingCount: number) {
   if (existingCount + files.length > MAX_FILES) {
-    throw new AttachmentError(`Keep attachments to ${MAX_FILES} files or fewer.`);
+    throw new AttachmentError("errors.tooManyFiles", { max: MAX_FILES });
   }
 }
 
@@ -115,24 +112,25 @@ async function matchesKind(file: File, ext: string) {
 
 async function inspectFile(file: File) {
   if (file.size > MAX_FILE_BYTES) {
-    throw new AttachmentError(`${file.name} is larger than 5 MB.`);
+    throw new AttachmentError("errors.fileTooLarge", { name: file.name });
   }
 
   const ext = extensionOf(file.name);
   if (!ALLOWED_EXTENSIONS.has(ext)) {
-    throw new AttachmentError(
-      `${file.name} is not an allowed type. Use PDF, images, Office, text, or CSV.`,
-    );
+    throw new AttachmentError("errors.fileTypeNotAllowed", { name: file.name });
   }
 
   const expectedMime = EXT_TO_MIME[ext];
   const declared = file.type.toLowerCase();
   if (declared && declared !== "application/octet-stream" && declared !== expectedMime) {
-    throw new AttachmentError(`${file.name} does not match its file type.`);
+    throw new AttachmentError("errors.fileTypeMismatch", { name: file.name });
   }
 
   if (!(await matchesKind(file, ext))) {
-    throw new AttachmentError(`${file.name} could not be verified as a safe ${ext.slice(1).toUpperCase()} file.`);
+    throw new AttachmentError("errors.fileUnverified", {
+      name: file.name,
+      kind: ext.slice(1).toUpperCase(),
+    });
   }
 
   return {
@@ -172,13 +170,13 @@ export async function saveAttachmentFiles(files: File[]): Promise<SavedAttachmen
 
 export function resolveStoredPath(storedName: string) {
   if (!STORED_NAME_PATTERN.test(storedName) || !ALLOWED_EXTENSIONS.has(path.extname(storedName))) {
-    throw new AttachmentError("That attachment could not be opened.");
+    throw new AttachmentError("errors.attachmentUnreadable");
   }
 
   const root = path.resolve(UPLOAD_DIR);
   const full = path.resolve(root, storedName);
   if (full !== root && !full.startsWith(root + path.sep)) {
-    throw new AttachmentError("That attachment could not be opened.");
+    throw new AttachmentError("errors.attachmentUnreadable");
   }
   return full;
 }

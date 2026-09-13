@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useT } from "@/components/locale-provider";
 
 export function BrandLogo({
   href = "/",
@@ -8,6 +11,7 @@ export function BrandLogo({
   href?: string;
   onDark?: boolean;
 }) {
+  const t = useT();
   return (
     <Link href={href} className="flex min-w-0 items-center gap-2.5">
       <Image
@@ -27,7 +31,7 @@ export function BrandLogo({
           Req<span className="text-brand">Pro</span>
         </span>
         <span className="mt-1 block text-[12px] font-medium tracking-[0.01em] text-teal">
-          Request & Approve
+          {t("brand.tagline")}
         </span>
       </span>
     </Link>

@@ -3,14 +3,9 @@
 import { startTransition, useActionState, useState, type FormEvent } from "react";
 import { retractRequest, type ActionState } from "@/app/actions/requests";
 import { ConfirmDialog, formDataFromSubmit } from "@/components/confirm-dialog";
+import { useT } from "@/components/locale-provider";
 import type { RequestCurrency, StepAction } from "@/lib/db/schema";
 import { formatAmount } from "@/lib/format";
-
-const stampLabel: Record<Exclude<StepAction, "sent_back" | "retracted">, string> = {
-  passed: "pass",
-  approved: "approval",
-  rejected: "rejection",
-};
 
 export function RetractForm({
   requestId,
@@ -27,16 +22,22 @@ export function RetractForm({
   currency: RequestCurrency | null;
   retracting: StepAction;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     retractRequest,
     undefined,
   );
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<FormData | null>(null);
+  const stampLabel: Record<Exclude<StepAction, "sent_back" | "retracted">, string> = {
+    passed: t("retract.stampPass"),
+    approved: t("retract.stampApproval"),
+    rejected: t("retract.stampRejection"),
+  };
   const what =
     retracting === "passed" || retracting === "approved" || retracting === "rejected"
       ? stampLabel[retracting]
-      : "decision";
+      : t("retract.stampDecision");
   const ref = [number, `"${title}"`].filter(Boolean).join(" ");
   const money = amount == null ? "" : ` · ${formatAmount(amount, currency)}`;
 
@@ -55,17 +56,16 @@ export function RetractForm({
       >
         <input type="hidden" name="requestId" value={requestId} />
         <p className="text-sm text-[#92400e]">
-          Take back your {what} while nobody after you has signed. This is logged;
-          it does not erase the earlier stamp.
+          {t("retract.help", { what })}
         </p>
         <label className="block text-sm font-medium text-ink">
-          Reason
+          {t("retract.reason")}
           <textarea
             className="input-field w-full min-h-24"
             name="comment"
             required
             maxLength={1000}
-            placeholder="Required"
+            placeholder={t("retract.required")}
           />
         </label>
         {state?.error ? (
@@ -78,14 +78,14 @@ export function RetractForm({
           disabled={pending}
           className="btn-ghost"
         >
-          {pending ? "Retracting…" : "Retract"}
+          {pending ? t("retract.pending") : t("retract.button")}
         </button>
       </form>
       <ConfirmDialog
         open={open}
-        title={`Retract your ${what}?`}
-        body={`${ref}${money}. This stays on the history.`}
-        confirmLabel="Retract"
+        title={t("retract.confirmTitle", { what })}
+        body={t("retract.confirmBody", { ref: `${ref}${money}` })}
+        confirmLabel={t("retract.button")}
         tone="danger"
         pending={pending}
         onCancel={() => {

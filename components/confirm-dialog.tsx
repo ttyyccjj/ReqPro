@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useId, useRef, type FormEvent } from "react";
+import { useT } from "@/components/locale-provider";
 
 export function ConfirmDialog({
   open,
   title,
   body,
   confirmLabel,
-  cancelLabel = "Cancel",
+  cancelLabel,
   tone = "default",
   pending = false,
   onConfirm,
@@ -23,8 +24,10 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const t = useT();
   const titleId = useId();
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const resolvedCancel = cancelLabel ?? t("confirm.cancel");
 
   useEffect(() => {
     if (!open) return;
@@ -57,7 +60,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Close"
+        aria-label={t("confirm.close")}
         className="absolute inset-0 bg-slate/40"
         disabled={pending}
         onClick={onCancel}
@@ -79,7 +82,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="btn-ghost"
           >
-            {cancelLabel}
+            {resolvedCancel}
           </button>
           <button
             ref={confirmRef}
@@ -88,7 +91,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={confirmClass}
           >
-            {pending ? "Working…" : confirmLabel}
+            {pending ? t("confirm.working") : confirmLabel}
           </button>
         </div>
       </div>

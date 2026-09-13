@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/current-user";
 import { db, ensureSchema } from "@/lib/db";
 import { positions, routeSteps, users } from "@/lib/db/schema";
+import { zodMessage } from "@/lib/i18n";
+import { getTranslator } from "@/lib/i18n-server";
 import { writeSystemLog } from "@/lib/system-log";
 import {
   positionNameSchema,
@@ -35,7 +37,8 @@ export async function addPosition(
   const admin = await requireAdmin();
   const parsed = positionNameSchema.safeParse({ name: formData.get("name") });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -45,7 +48,8 @@ export async function addPosition(
     .where(eq(positions.name, parsed.data.name))
     .limit(1);
   if (existing) {
-    return { error: "A position with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.positionExists") };
   }
 
   await db.insert(positions).values({
@@ -74,7 +78,8 @@ export async function renamePosition(
     name: formData.get("name"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Check the name and try again." };
+    const t = await getTranslator();
+    return { error: zodMessage(t, parsed.error.issues, "validation.checkName") };
   }
 
   await ensureSchema();
@@ -84,7 +89,8 @@ export async function renamePosition(
     .where(eq(positions.name, parsed.data.name))
     .limit(1);
   if (duplicate && duplicate.id !== parsed.data.positionId) {
-    return { error: "A position with that name already exists." };
+    const t = await getTranslator();
+    return { error: t("errors.positionExists") };
   }
 
   const [current] = await db
@@ -93,7 +99,8 @@ export async function renamePosition(
     .where(eq(positions.id, parsed.data.positionId))
     .limit(1);
   if (!current) {
-    return { error: "That position no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.positionMissing") };
   }
   if (current.name === parsed.data.name) {
     return;
@@ -123,7 +130,8 @@ export async function setPositionActive(
     active: formData.get("active"),
   });
   if (!parsed.success) {
-    return { error: "That position change is not valid." };
+    const t = await getTranslator();
+    return { error: t("errors.positionInvalid") };
   }
 
   const nextActive = parsed.data.active === "true";
@@ -135,7 +143,8 @@ export async function setPositionActive(
     .where(eq(positions.id, parsed.data.id))
     .limit(1);
   if (!current) {
-    return { error: "That position no longer exists." };
+    const t = await getTranslator();
+    return { error: t("errors.positionMissing") };
   }
 
   if (!nextActive) {
@@ -145,7 +154,8 @@ export async function setPositionActive(
       .where(eq(users.positionId, parsed.data.id))
       .limit(1);
     if (assigned) {
-      return { error: "Move people out of this position first." };
+      const t = await getTranslator();
+      return { error: t("errors.positionInUse") };
     }
 
     const [onRoute] = await db
@@ -154,7 +164,8 @@ export async function setPositionActive(
       .where(eq(routeSteps.positionId, parsed.data.id))
       .limit(1);
     if (onRoute) {
-      return { error: "Remove it from the route first." };
+      const t = await getTranslator();
+      return { error: t("errors.positionOnRoute") };
     }
   }
 

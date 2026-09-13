@@ -22,7 +22,7 @@ export async function startWorkflow(request: Pick<Request, "id" | "submittedBy">
 
   const template = await db.select().from(routeSteps).orderBy(asc(routeSteps.sortOrder));
   if (!template.some((step) => step.kind === "approve")) {
-    throw new WorkflowError("The route must include at least one approve step.");
+    throw new WorkflowError("workflow.needApproveStep");
   }
 
   const positionRows = await db.select().from(positions);
@@ -205,11 +205,11 @@ export async function actOnStep(input: {
     .limit(1);
 
   if (!request || request.status !== "pending") {
-    throw new WorkflowError("This request is not waiting for a decision.");
+    throw new WorkflowError("workflow.notWaiting");
   }
 
   if (request.submittedBy === input.userId) {
-    throw new WorkflowError("You cannot act on your own request.");
+    throw new WorkflowError("workflow.cannotActOwn");
   }
 
   const [actor] = await db
@@ -218,7 +218,7 @@ export async function actOnStep(input: {
     .where(eq(users.id, input.userId))
     .limit(1);
   if (!actor?.active) {
-    throw new WorkflowError("You cannot act on this step.");
+    throw new WorkflowError("workflow.cannotActStep");
   }
 
   const [step] = await db
@@ -230,7 +230,7 @@ export async function actOnStep(input: {
     .limit(1);
 
   if (!step) {
-    throw new WorkflowError("This request has no active step.");
+    throw new WorkflowError("workflow.noActiveStep");
   }
 
   const [assignee] = await db
@@ -245,26 +245,26 @@ export async function actOnStep(input: {
     .limit(1);
 
   if (!assignee || assignee.completed) {
-    throw new WorkflowError("You cannot act on this step.");
+    throw new WorkflowError("workflow.cannotActStep");
   }
 
   if (step.kind === "review" && input.action === "rejected") {
-    throw new WorkflowError("Reviewers cannot reject a request.");
+    throw new WorkflowError("workflow.reviewersCannotReject");
   }
 
   if (step.kind === "review" && input.action === "approved") {
-    throw new WorkflowError("Use pass to complete a review step.");
+    throw new WorkflowError("workflow.usePass");
   }
 
   if (step.kind === "approve" && input.action === "passed") {
-    throw new WorkflowError("Use approve to complete an approval step.");
+    throw new WorkflowError("workflow.useApprove");
   }
 
   if (
     (input.action === "sent_back" || input.action === "rejected") &&
     !input.comment
   ) {
-    throw new WorkflowError("Add a short reason for this action.");
+    throw new WorkflowError("workflow.reasonRequired");
   }
 
   await db.insert(requestActions).values({
@@ -459,7 +459,7 @@ export async function retractDecision(
 
   const reason = comment.trim();
   if (!reason) {
-    throw new WorkflowError("Add a short reason for this retract.");
+    throw new WorkflowError("workflow.retractReason");
   }
 
   const [actor] = await db
@@ -468,14 +468,12 @@ export async function retractDecision(
     .where(eq(users.id, userId))
     .limit(1);
   if (!actor?.active) {
-    throw new WorkflowError("You cannot retract this decision.");
+    throw new WorkflowError("workflow.cannotRetract");
   }
 
   const found = await findRetractableAction(requestId, userId);
   if (!found) {
-    throw new WorkflowError(
-      "You can only retract your last pass, approve, or reject, and only if nobody has signed after you.",
-    );
+    throw new WorkflowError("workflow.retractWindow");
   }
 
   const { request, stamp } = found;
@@ -515,7 +513,7 @@ export async function retractDecision(
     .where(eq(requestSteps.id, stamp.requestStepId))
     .limit(1);
   if (!step) {
-    throw new WorkflowError("That step is no longer on this request.");
+    throw new WorkflowError("workflow.stepMissing");
   }
 
   const allSteps = await db
@@ -585,10 +583,10 @@ export async function resumeAfterEdits(requestId: string, userId: string) {
     .limit(1);
 
   if (!request || request.submittedBy !== userId) {
-    throw new WorkflowError("You can only update your own request.");
+    throw new WorkflowError("workflow.updateOwnOnly");
   }
   if (request.status !== "changes_requested") {
-    throw new WorkflowError("This request is not waiting for changes.");
+    throw new WorkflowError("workflow.notWaitingChanges");
   }
 
   const [step] = await db
@@ -633,10 +631,10 @@ export async function withdrawRequest(requestId: string, userId: string) {
     .limit(1);
 
   if (!request || request.submittedBy !== userId) {
-    throw new WorkflowError("You can only withdraw your own request.");
+    throw new WorkflowError("workflow.withdrawOwnOnly");
   }
   if (request.status !== "pending") {
-    throw new WorkflowError("Only a pending request can be withdrawn.");
+    throw new WorkflowError("workflow.withdrawPendingOnly");
   }
 
   const [signedOff] = await db
@@ -646,9 +644,7 @@ export async function withdrawRequest(requestId: string, userId: string) {
     .limit(1);
 
   if (signedOff) {
-    throw new WorkflowError(
-      "Someone has already signed off. You can no longer withdraw this request.",
-    );
+    throw new WorkflowError("workflow.alreadySigned");
   }
 
   const updated = await db
@@ -662,7 +658,7 @@ export async function withdrawRequest(requestId: string, userId: string) {
     .returning({ id: requests.id });
 
   if (updated.length === 0) {
-    throw new WorkflowError("This request is not waiting to be withdrawn.");
+    throw new WorkflowError("workflow.notWaitingWithdraw");
   }
 
   const [after] = await db
@@ -686,9 +682,7 @@ export async function withdrawRequest(requestId: string, userId: string) {
           eq(requests.decidedBy, userId),
         ),
       );
-    throw new WorkflowError(
-      "Someone has already signed off. You can no longer withdraw this request.",
-    );
+    throw new WorkflowError("workflow.alreadySigned");
   }
 
   await writeSystemLog({

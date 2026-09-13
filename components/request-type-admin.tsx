@@ -8,9 +8,11 @@ import {
   type RequestTypeActionState,
 } from "@/app/actions/request-types";
 import { ActiveToggleForm } from "@/components/active-toggle";
+import { useT } from "@/components/locale-provider";
 import { inputClassCompact as inputClass } from "@/lib/ui";
 
 export function AddRequestTypeForm() {
+  const t = useT();
   const [state, formAction, pending] = useActionState<RequestTypeActionState, FormData>(
     addRequestType,
     undefined,
@@ -21,7 +23,7 @@ export function AddRequestTypeForm() {
       <input
         className={inputClass}
         name="name"
-        placeholder="Type name"
+        placeholder={t("settings.typeName")}
         required
         maxLength={80}
       />
@@ -30,7 +32,7 @@ export function AddRequestTypeForm() {
         disabled={pending}
         className="btn-primary py-1.5"
       >
-        {pending ? "Adding…" : "Add type"}
+        {pending ? t("settings.adding") : t("settings.addType")}
       </button>
       {state?.error ? (
         <span className="text-sm text-rose-700" role="alert">
@@ -48,6 +50,7 @@ export function RenameRequestTypeForm({
   typeId: string;
   name: string;
 }) {
+  const t = useT();
   const [state, formAction, pending] = useActionState<RequestTypeActionState, FormData>(
     renameRequestType,
     undefined,
@@ -62,7 +65,7 @@ export function RenameRequestTypeForm({
         disabled={pending}
         className="btn-ghost px-2 py-1"
       >
-        {pending ? "Saving…" : "Rename"}
+        {pending ? t("settings.saving") : t("settings.rename")}
       </button>
       {state?.error ? (
         <span className="text-xs text-rose-700">{state.error}</span>
